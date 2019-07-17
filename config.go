@@ -3,7 +3,7 @@ package redisclient
 import (
 	"time"
 
-	"github.com/pm-esd/redis/util"
+	"github.com/pm-esd/redisclient/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
