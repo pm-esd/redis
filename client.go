@@ -1,4 +1,4 @@
-package redisclient
+package redis
 
 import (
 	"errors"
@@ -20,14 +20,14 @@ type Client struct {
 	fmtString string
 }
 
-// NewClient  new client
+// NewClient 新客户端
 func NewClient(opts Options) *Client {
 	r := &Client{opts: opts}
 	switch opts.Type {
-	// Cluster client
+	// 群集客户端
 	case ClientCluster:
 		r.client = redis.NewClusterClient(opts.GetClusterConfig())
-	// Standard client also as default
+	// 标准客户端也是默认值
 	case ClientNormal:
 		fallthrough
 	default:
@@ -45,17 +45,17 @@ func (r *Client) IsCluster() bool {
 	return false
 }
 
-//Prefix return prefix+key
+//Prefix 返回前缀+键
 func (r *Client) Prefix(key string) string {
 	return fmt.Sprintf(r.fmtString, key)
 }
 
-// Formats and retuns the key with the prefix
+// k 格式化并返回带前缀的密钥
 func (r *Client) k(key string) string {
 	return fmt.Sprintf(r.fmtString, key)
 }
 
-// Formats and returns a set of keys using the prefix
+// ks 使用前缀格式化并返回一组键
 func (r *Client) ks(key ...string) []string {
 	keys := make([]string, len(key))
 	for i, k := range key {
@@ -64,60 +64,52 @@ func (r *Client) ks(key ...string) []string {
 	return keys
 }
 
-// GetClient returns the client
+// GetClient 返回客户端
 func (r *Client) GetClient() Commander {
 	return r.client
 }
 
-// -------------- Pinger
-
-// Ping sends a Ping command
+// Ping 发送ping命令
 func (r *Client) Ping() *redis.StatusCmd {
 	return r.client.Ping()
 }
 
-// -------------- Incrementer
-
-// Incr increments the key by 1
+// Incr 对key递增+1
 func (r *Client) Incr(key string) *redis.IntCmd {
 	return r.client.Incr(r.k(key))
 }
 
-// IncrBy increments using a increment value
+// IncrBy 使用增量值递增
 func (r *Client) IncrBy(key string, value int64) *redis.IntCmd {
 	return r.client.IncrBy(r.k(key), value)
 }
 
-// -------------- Decrementer
-
-// Decr decrements the key by 1
+// Decr key递减1
 func (r *Client) Decr(key string) *redis.IntCmd {
 	return r.client.Decr(r.k(key))
 }
 
-// DecrBy decrements using a increment value
+// DecrBy 使用增量值递减
 func (r *Client) DecrBy(key string, value int64) *redis.IntCmd {
 	return r.client.DecrBy(r.k(key), value)
 }
 
-// -------------- Expirer
-
-// Expire expire method
+// Expire 过期方法
 func (r *Client) Expire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.Expire(r.k(key), expiration)
 }
 
-// ExpireAt expireat method
+// ExpireAt  命令用于以 UNIX 时间戳(unix timestamp)格式设置 key 的过期时间
 func (r *Client) ExpireAt(key string, tm time.Time) *redis.BoolCmd {
 	return r.client.ExpireAt(r.k(key), tm)
 }
 
-// Persist persist command
+// Persist 移除 key 的过期时间
 func (r *Client) Persist(key string) *redis.BoolCmd {
 	return r.client.Persist(r.k(key))
 }
 
-// PExpire redis command
+// PExpire 毫秒为单位设置 key 的生存时间
 func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.PExpire(r.k(key), expiration)
 }
@@ -130,8 +122,6 @@ func (r *Client) PTTL(key string) *redis.DurationCmd {
 func (r *Client) TTL(key string) *redis.DurationCmd {
 	return r.client.TTL(r.k(key))
 }
-
-// -------------- Getter
 
 // Exists exists command
 func (r *Client) Exists(key ...string) *redis.IntCmd {

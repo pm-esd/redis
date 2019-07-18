@@ -1,9 +1,9 @@
-package redisclient
+package redis
 
 import (
 	"time"
 
-	"github.com/pm-esd/redisclient/util"
+	"github.com/pm-esd/redis/util"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

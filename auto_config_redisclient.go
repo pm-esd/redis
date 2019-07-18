@@ -1,4 +1,4 @@
-package redisclient
+package redis
 
 // AutoConfigRedisClient 合并配置文件和环境
 func AutoConfigRedisClient(rwType RWType) (*Client, error) {
