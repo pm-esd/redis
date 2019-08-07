@@ -1,4 +1,4 @@
-module redis
+module github.com/pm-esd/redis
 
 go 1.12
 
