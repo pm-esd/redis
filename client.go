@@ -63,6 +63,7 @@ func connect(config *Config) *Client {
 		opts.Type = ClientNormal
 	}
 	opts.Hosts = config.Hosts
+	opts.KeyPrefix = config.KeyPrefix
 
 	if config.PoolSize > 0 {
 		opts.PoolSize = config.PoolSize
