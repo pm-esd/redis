@@ -1,9 +1,8 @@
-package util
+package redis
 
 import (
 	"os"
 
-	"github.com/pm-esd/redis"
 	"github.com/spf13/viper"
 )
 
@@ -28,9 +27,9 @@ func LoadParamsFromEnv() *viper.Viper {
 	prefix := os.Getenv(EnvPrefixKey)
 	if prefix == "" {
 		prefix = DefaultEnvPrefixKey
-		redis.Log.Warn("ENV_PREFIX not exist in env Use default env prefix: %s", DefaultEnvPrefixKey)
+		Log.Warn("ENV_PREFIX not exist in env Use default env prefix: %s", DefaultEnvPrefixKey)
 	} else {
-		redis.Log.Warn("Use EnvPrefixKey: %s", prefix)
+		Log.Warn("Use EnvPrefixKey: %s", prefix)
 	}
 	v.SetEnvPrefix(prefix)
 	v.AutomaticEnv()
@@ -46,17 +45,17 @@ func LoadParamsFromVolume() (*viper.Viper, error) {
 	//使用默认DIR
 	if configDir == "" {
 		configDir = DefaultDir
-		redis.Log.Warn("ConfigDirKey not exist in env Use default dir %s", DefaultDir)
+		Log.Warn("ConfigDirKey not exist in env Use default dir %s", DefaultDir)
 	} else {
-		redis.Log.Info("Use Config_Dir: %s", configDir)
+		Log.Info("Use Config_Dir: %s", configDir)
 	}
 
 	//使用默认文件名称
 	if fileName == "" {
 		fileName = DefaultFileName
-		redis.Log.Warn("ConfigNameKey not exist in env Use default name %s", DefaultFileName)
+		Log.Warn("ConfigNameKey not exist in env Use default name %s", DefaultFileName)
 	} else {
-		redis.Log.Info("Use CONFIG_NAME: %s", fileName)
+		Log.Info("Use CONFIG_NAME: %s", fileName)
 	}
 
 	v.SetConfigName(fileName)

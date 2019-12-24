@@ -3,7 +3,6 @@ package redis
 import (
 	"time"
 
-	"github.com/pm-esd/redis/util"
 	"github.com/spf13/viper"
 )
 
@@ -84,7 +83,7 @@ func customizedOption(viper *viper.Viper, rwType RWType) *Options {
 
 // customizedOptionsFromVolume Customized Options by  Volume
 func customizedOptionsFromVolume(rwType RWType) (*Options, error) {
-	fromVolume, err := util.LoadParamsFromVolume()
+	fromVolume, err := LoadParamsFromVolume()
 	if err != nil {
 		return nil, err
 	}
@@ -93,18 +92,18 @@ func customizedOptionsFromVolume(rwType RWType) (*Options, error) {
 
 // customizedOptionsFromEnv Customized Options by  Env
 func customizedOptionsFromEnv(rwType RWType) (*Options, error) {
-	fromEnv := util.LoadParamsFromEnv()
+	fromEnv := LoadParamsFromEnv()
 	return customizedOption(fromEnv, rwType), nil
 }
 
 // customizedOptionsFromFullVariable Customized Options by  Volume and Env
 func customizedOptionsFromFullVariable(rwType RWType) (*Options, error) {
 
-	fromVolume, err := util.LoadParamsFromVolume()
+	fromVolume, err := LoadParamsFromVolume()
 	if err != nil {
 		return nil, err
 	}
-	fromEnv := util.LoadParamsFromEnv()
+	fromEnv := LoadParamsFromEnv()
 	mergeViper(fromVolume, fromEnv, rwType)
 	return customizedOption(fromVolume, rwType), nil
 }

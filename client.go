@@ -9,16 +9,14 @@ import (
 	"github.com/go-redis/redis"
 )
 
-
-
 type Config struct {
-	Type     	 bool        //是否集群
-	Hosts     	 []string       //IP
-	Password     string        //密码
-	Database     int        //数据库
-	PoolSize     int        //连接池大小
+	Type      bool     //是否集群
+	Hosts     []string //IP
+	Password  string   //密码
+	Database  int      //数据库
+	PoolSize  int      //连接池大小
+	KeyPrefix string
 }
-
 
 type Configs struct {
 	cfg         map[string]*Config
@@ -41,7 +39,7 @@ func (configs *Configs) SetConfig(name string, cf *Config) *Configs {
 }
 
 //Get  获取 redis 实列
-func (configs *Configs) Get(name string) *Client {
+func (configs *Configs) GetRedis(name string) *Client {
 	config, ok := configs.cfg[name]
 	if !ok {
 		Log.Fatal("Redis配置:" + name + "找不到！")
@@ -57,25 +55,23 @@ func (configs *Configs) Get(name string) *Client {
 	return v
 }
 
-
-
 func connect(config *Config) *Client {
 	opts := Options{}
 	if config.Type {
 		opts.Type = ClientCluster
-	}else{
+	} else {
 		opts.Type = ClientNormal
 	}
 	opts.Hosts = config.Hosts
 
-	if config.PoolSize >0 {
+	if config.PoolSize > 0 {
 		opts.PoolSize = config.PoolSize
-	}else{
+	} else {
 		opts.PoolSize = 64
 	}
 	if config.Database > 0 {
 		opts.Database = config.Database
-	}else{
+	} else {
 		opts.Database = 0
 	}
 	if config.Password != "" {
