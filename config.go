@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/pm-esd/redis/util"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -37,10 +36,10 @@ func addrStructure(redisPort []string, redisHosts []string) []string {
 	if len(redisPort) != len(redisHosts) {
 		port := "6379"
 		if len(redisPort) == 0 {
-			logrus.Warnf("REDIS_PORT not exist, Use default port:%s", port)
+			Log.Warn("REDIS_PORT not exist, Use default port:%s", port)
 		} else {
 			port = redisPort[0]
-			logrus.Warnf("REDIS_PORT len not equal REDIS_HOST len, Use first port:%s", port)
+			Log.Warn("REDIS_PORT len not equal REDIS_HOST len, Use first port:%s", port)
 		}
 		for _, host := range redisHosts {
 			host := host + ":" + port
@@ -53,7 +52,7 @@ func addrStructure(redisPort []string, redisHosts []string) []string {
 		}
 	}
 	if len(hosts) == 0 {
-		logrus.Warnf("REDIS_PORT hosts is empty")
+		Log.Warn("REDIS_PORT hosts is empty")
 	}
 	return hosts
 }

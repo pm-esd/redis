@@ -7,8 +7,86 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/sirupsen/logrus"
 )
+
+
+
+type Config struct {
+	Type     	 bool        //是否集群
+	Hosts     	 []string       //IP
+	Password     string        //密码
+	Database     int        //数据库
+	PoolSize     int        //连接池大小
+}
+
+
+type Configs struct {
+	cfg         map[string]*Config
+	connections map[string]*Client
+	sync.RWMutex
+}
+
+//Default ..
+func Default() *Configs {
+	return &Configs{
+		cfg:         make(map[string]*Config),
+		connections: make(map[string]*Client),
+	}
+}
+
+//SetConfig 设置配置文件
+func (configs *Configs) SetConfig(name string, cf *Config) *Configs {
+	configs.cfg[name] = cf
+	return configs
+}
+
+//Get  获取 redis 实列
+func (configs *Configs) Get(name string) *Client {
+	config, ok := configs.cfg[name]
+	if !ok {
+		Log.Fatal("Redis配置:" + name + "找不到！")
+	}
+
+	db := connect(config)
+	configs.Lock()
+	configs.connections[name] = db
+	configs.Unlock()
+	configs.RLock()
+	v := configs.connections[name]
+	configs.RUnlock()
+	return v
+}
+
+
+
+func connect(config *Config) *Client {
+	opts := Options{}
+	if config.Type {
+		opts.Type = ClientCluster
+	}else{
+		opts.Type = ClientNormal
+	}
+	opts.Hosts = config.Hosts
+
+	if config.PoolSize >0 {
+		opts.PoolSize = config.PoolSize
+	}else{
+		opts.PoolSize = 64
+	}
+	if config.Database > 0 {
+		opts.Database = config.Database
+	}else{
+		opts.Database = 0
+	}
+	if config.Password != "" {
+		opts.Password = config.Password
+	}
+	client := NewClient(opts)
+	if err := client.Ping().Err(); err != nil {
+		Log.Panic(err.Error())
+	}
+	return client
+}
 
 // RedisNil means nil reply, .e.g. when key does not exist.
 const RedisNil = redis.Nil
@@ -168,7 +246,7 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 			p := pipes[i%pipeCount]
 			p.Get(r.k(k))
 		}
-		logrus.Debugf("process cost: %v", time.Since(start))
+		Log.Debug("process cost: %v", time.Since(start))
 		start = time.Now()
 		var wg sync.WaitGroup
 		var lock sync.Mutex
@@ -195,7 +273,7 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 			}()
 		}
 		wg.Wait()
-		logrus.Debugf("exec cost: %v", time.Since(start))
+		Log.Debug("exec cost: %v", time.Since(start))
 
 		if len(errors) > 0 {
 			return nil, <-errors

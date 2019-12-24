@@ -3,7 +3,7 @@ package util
 import (
 	"os"
 
-	"github.com/sirupsen/logrus"
+	"github.com/pm-esd/redis"
 	"github.com/spf13/viper"
 )
 
@@ -28,9 +28,9 @@ func LoadParamsFromEnv() *viper.Viper {
 	prefix := os.Getenv(EnvPrefixKey)
 	if prefix == "" {
 		prefix = DefaultEnvPrefixKey
-		logrus.Warnf("ENV_PREFIX not exist in env Use default env prefix: %s", DefaultEnvPrefixKey)
+		redis.Log.Warn("ENV_PREFIX not exist in env Use default env prefix: %s", DefaultEnvPrefixKey)
 	} else {
-		logrus.Warnf("Use EnvPrefixKey: %s", prefix)
+		redis.Log.Warn("Use EnvPrefixKey: %s", prefix)
 	}
 	v.SetEnvPrefix(prefix)
 	v.AutomaticEnv()
@@ -46,17 +46,17 @@ func LoadParamsFromVolume() (*viper.Viper, error) {
 	//使用默认DIR
 	if configDir == "" {
 		configDir = DefaultDir
-		logrus.Warnf("ConfigDirKey not exist in env Use default dir %s", DefaultDir)
+		redis.Log.Warn("ConfigDirKey not exist in env Use default dir %s", DefaultDir)
 	} else {
-		logrus.Infof("Use Config_Dir: %s", configDir)
+		redis.Log.Info("Use Config_Dir: %s", configDir)
 	}
 
 	//使用默认文件名称
 	if fileName == "" {
 		fileName = DefaultFileName
-		logrus.Warnf("ConfigNameKey not exist in env Use default name %s", DefaultFileName)
+		redis.Log.Warn("ConfigNameKey not exist in env Use default name %s", DefaultFileName)
 	} else {
-		logrus.Infof("Use CONFIG_NAME: %s", fileName)
+		redis.Log.Info("Use CONFIG_NAME: %s", fileName)
 	}
 
 	v.SetConfigName(fileName)
