@@ -40,6 +40,12 @@ func (configs *Configs) SetConfig(name string, cf *Config) *Configs {
 
 //Get  获取 redis 实列
 func (configs *Configs) GetRedis(name string) *Client {
+
+	conn, ok := configs.connections[name]
+	if ok {
+		return conn
+	}
+
 	config, ok := configs.cfg[name]
 	if !ok {
 		Log.Fatal("Redis配置:" + name + "找不到！")
