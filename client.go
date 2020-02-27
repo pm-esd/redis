@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 )
 
 type Config struct {
@@ -334,12 +334,13 @@ func (r *Client) HLen(key string) *redis.IntCmd {
 func (r *Client) HMGet(key string, fields ...string) *redis.SliceCmd {
 	return r.client.HMGet(r.k(key), fields...)
 }
-func (r *Client) HMSet(key string, fields map[string]interface{}) *redis.StatusCmd {
-	return r.client.HMSet(r.k(key), fields)
+
+func (r *Client) HMSet(key string, value ...interface{}) *redis.BoolCmd {
+	return r.client.HMSet(r.k(key), value...)
 }
 
-func (r *Client) HSet(key, field string, value interface{}) *redis.BoolCmd {
-	return r.client.HSet(r.k(key), field, value)
+func (r *Client) HSet(key string, value ...interface{}) *redis.IntCmd {
+	return r.client.HSet(r.k(key), value...)
 }
 func (r *Client) HSetNX(key, field string, value interface{}) *redis.BoolCmd {
 	return r.client.HSetNX(r.k(key), field, value)
@@ -418,6 +419,14 @@ func (r *Client) Unlink(keys ...string) *redis.IntCmd {
 	return r.client.Unlink(r.ks(keys...)...)
 }
 
+func (r *Client) MSet(values ...interface{}) *redis.StatusCmd {
+	return r.client.MSet(values...)
+}
+
+func (r *Client) MSetNX(values ...interface{}) *redis.BoolCmd {
+	return r.client.MSetNX(values...)
+}
+
 // -------------- Settable
 
 func (r *Client) SAdd(key string, members ...interface{}) *redis.IntCmd {
@@ -471,31 +480,31 @@ func (r *Client) SUnionStore(destination string, keys ...string) *redis.IntCmd {
 
 // -------------- SortedSettable
 
-func (r *Client) ZAdd(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAdd(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAdd(r.k(key), members...)
 }
-func (r *Client) ZAddNX(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAddNX(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddNX(r.k(key), members...)
 }
-func (r *Client) ZAddXX(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAddXX(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddXX(r.k(key), members...)
 }
-func (r *Client) ZAddCh(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAddCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddCh(r.k(key), members...)
 }
-func (r *Client) ZAddNXCh(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAddNXCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddNXCh(r.k(key), members...)
 }
-func (r *Client) ZAddXXCh(key string, members ...redis.Z) *redis.IntCmd {
+func (r *Client) ZAddXXCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddXXCh(r.k(key), members...)
 }
-func (r *Client) ZIncr(key string, member redis.Z) *redis.FloatCmd {
+func (r *Client) ZIncr(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncr(r.k(key), member)
 }
-func (r *Client) ZIncrNX(key string, member redis.Z) *redis.FloatCmd {
+func (r *Client) ZIncrNX(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncrNX(r.k(key), member)
 }
-func (r *Client) ZIncrXX(key string, member redis.Z) *redis.FloatCmd {
+func (r *Client) ZIncrXX(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncrXX(r.k(key), member)
 }
 func (r *Client) ZCard(key string) *redis.IntCmd {
@@ -507,8 +516,9 @@ func (r *Client) ZCount(key, min, max string) *redis.IntCmd {
 func (r *Client) ZIncrBy(key string, increment float64, member string) *redis.FloatCmd {
 	return r.client.ZIncrBy(r.k(key), increment, member)
 }
-func (r *Client) ZInterStore(key string, store redis.ZStore, keys ...string) *redis.IntCmd {
-	return r.client.ZInterStore(r.k(key), store, r.ks(keys...)...)
+
+func (r *Client) ZInterStore(key string, store *redis.ZStore) *redis.IntCmd {
+	return r.client.ZInterStore(r.k(key), store)
 }
 func (r *Client) ZRange(key string, start, stop int64) *redis.StringSliceCmd {
 	return r.client.ZRange(r.k(key), start, stop)
@@ -516,13 +526,13 @@ func (r *Client) ZRange(key string, start, stop int64) *redis.StringSliceCmd {
 func (r *Client) ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
 	return r.client.ZRangeWithScores(r.k(key), start, stop)
 }
-func (r *Client) ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd {
+func (r *Client) ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRangeByScore(r.k(key), opt)
 }
-func (r *Client) ZRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd {
+func (r *Client) ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRangeByLex(r.k(key), opt)
 }
-func (r *Client) ZRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd {
+func (r *Client) ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
 	return r.client.ZRangeByScoreWithScores(r.k(key), opt)
 }
 func (r *Client) ZRank(key, member string) *redis.IntCmd {
@@ -546,13 +556,13 @@ func (r *Client) ZRevRange(key string, start, stop int64) *redis.StringSliceCmd 
 func (r *Client) ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
 	return r.client.ZRevRangeWithScores(r.k(key), start, stop)
 }
-func (r *Client) ZRevRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd {
+func (r *Client) ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRevRangeByScore(r.k(key), opt)
 }
-func (r *Client) ZRevRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd {
+func (r *Client) ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRevRangeByLex(r.k(key), opt)
 }
-func (r *Client) ZRevRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd {
+func (r *Client) ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
 	return r.client.ZRevRangeByScoreWithScores(r.k(key), opt)
 }
 func (r *Client) ZRevRank(key, member string) *redis.IntCmd {
@@ -561,8 +571,9 @@ func (r *Client) ZRevRank(key, member string) *redis.IntCmd {
 func (r *Client) ZScore(key, member string) *redis.FloatCmd {
 	return r.client.ZScore(r.k(key), member)
 }
-func (r *Client) ZUnionStore(dest string, store redis.ZStore, keys ...string) *redis.IntCmd {
-	return r.client.ZUnionStore(r.k(dest), store, r.ks(keys...)...)
+
+func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
+	return r.client.ZUnionStore(r.k(dest), store)
 }
 
 // -------------- BlockedSettable

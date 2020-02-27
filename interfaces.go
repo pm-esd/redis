@@ -3,7 +3,7 @@ package redis
 import (
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 )
 
 // Pinger ping 服务器
@@ -53,8 +53,8 @@ type Setter interface {
 	Del(keys ...string) *redis.IntCmd
 	Unlink(keys ...string) *redis.IntCmd
 
-	// MSet(pairs ...interface{}) *redis.StatusCmd
-	// MSetNX(pairs ...interface{}) *redis.BoolCmd
+	MSet(values ...interface{}) *redis.StatusCmd
+	MSetNX(values ...interface{}) *redis.BoolCmd
 }
 
 // Hasher interface  哈希表命令
@@ -67,8 +67,8 @@ type Hasher interface {
 	HKeys(key string) *redis.StringSliceCmd
 	HLen(key string) *redis.IntCmd
 	HMGet(key string, fields ...string) *redis.SliceCmd
-	HMSet(key string, fields map[string]interface{}) *redis.StatusCmd
-	HSet(key, field string, value interface{}) *redis.BoolCmd
+	HMSet(key string, values ...interface{}) *redis.BoolCmd
+	HSet(key string, value ...interface{}) *redis.IntCmd
 	HSetNX(key, field string, value interface{}) *redis.BoolCmd
 	HVals(key string) *redis.StringSliceCmd
 	HDel(key string, fields ...string) *redis.IntCmd
@@ -82,7 +82,7 @@ type Lister interface {
 	LLen(key string) *redis.IntCmd
 	LPop(key string) *redis.StringCmd
 	LPush(key string, values ...interface{}) *redis.IntCmd
-	LPushX(key string, value interface{}) *redis.IntCmd
+	LPushX(key string, value ...interface{}) *redis.IntCmd
 	LRange(key string, start, stop int64) *redis.StringSliceCmd
 	LRem(key string, count int64, value interface{}) *redis.IntCmd
 	LSet(key string, index int64, value interface{}) *redis.StatusCmd
@@ -90,7 +90,7 @@ type Lister interface {
 	RPop(key string) *redis.StringCmd
 	RPopLPush(source, destination string) *redis.StringCmd
 	RPush(key string, values ...interface{}) *redis.IntCmd
-	RPushX(key string, value interface{}) *redis.IntCmd
+	RPushX(key string, value ...interface{}) *redis.IntCmd
 }
 
 type Settable interface {
@@ -113,24 +113,24 @@ type Settable interface {
 }
 
 type SortedSettable interface {
-	ZAdd(key string, members ...redis.Z) *redis.IntCmd
-	ZAddNX(key string, members ...redis.Z) *redis.IntCmd
-	ZAddXX(key string, members ...redis.Z) *redis.IntCmd
-	ZAddCh(key string, members ...redis.Z) *redis.IntCmd
-	ZAddNXCh(key string, members ...redis.Z) *redis.IntCmd
-	ZAddXXCh(key string, members ...redis.Z) *redis.IntCmd
-	ZIncr(key string, member redis.Z) *redis.FloatCmd
-	ZIncrNX(key string, member redis.Z) *redis.FloatCmd
-	ZIncrXX(key string, member redis.Z) *redis.FloatCmd
+	ZAdd(key string, members ...*redis.Z) *redis.IntCmd
+	ZAddNX(key string, members ...*redis.Z) *redis.IntCmd
+	ZAddXX(key string, members ...*redis.Z) *redis.IntCmd
+	ZAddCh(key string, members ...*redis.Z) *redis.IntCmd
+	ZAddNXCh(key string, members ...*redis.Z) *redis.IntCmd
+	ZAddXXCh(key string, members ...*redis.Z) *redis.IntCmd
+	ZIncr(key string, member *redis.Z) *redis.FloatCmd
+	ZIncrNX(key string, member *redis.Z) *redis.FloatCmd
+	ZIncrXX(key string, member *redis.Z) *redis.FloatCmd
 	ZCard(key string) *redis.IntCmd
 	ZCount(key, min, max string) *redis.IntCmd
 	ZIncrBy(key string, increment float64, member string) *redis.FloatCmd
-	ZInterStore(destination string, store redis.ZStore, keys ...string) *redis.IntCmd
+	ZInterStore(destination string, store *redis.ZStore) *redis.IntCmd
 	ZRange(key string, start, stop int64) *redis.StringSliceCmd
 	ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
-	ZRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
-	ZRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
-	ZRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
+	ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd
+	ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd
 	ZRank(key, member string) *redis.IntCmd
 	ZRem(key string, members ...interface{}) *redis.IntCmd
 	ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd
@@ -138,12 +138,12 @@ type SortedSettable interface {
 	ZRemRangeByLex(key, min, max string) *redis.IntCmd
 	ZRevRange(key string, start, stop int64) *redis.StringSliceCmd
 	ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
-	ZRevRangeByScore(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
-	ZRevRangeByLex(key string, opt redis.ZRangeBy) *redis.StringSliceCmd
-	ZRevRangeByScoreWithScores(key string, opt redis.ZRangeBy) *redis.ZSliceCmd
+	ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd
+	ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd
+	ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd
 	ZRevRank(key, member string) *redis.IntCmd
 	ZScore(key, member string) *redis.FloatCmd
-	ZUnionStore(dest string, store redis.ZStore, keys ...string) *redis.IntCmd
+	ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd
 }
 
 type Scanner interface {
