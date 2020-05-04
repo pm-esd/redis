@@ -21,7 +21,7 @@ type Config struct {
 type Configs struct {
 	cfg         map[string]*Config
 	connections map[string]*Client
-	sync.RWMutex
+	mu          sync.RWMutex
 }
 
 //Default ..
@@ -52,12 +52,12 @@ func (configs *Configs) GetRedis(name string) *Client {
 	}
 
 	db := connect(config)
-	configs.Lock()
+	configs.mu.Lock()
 	configs.connections[name] = db
-	configs.Unlock()
-	configs.RLock()
+	configs.mu.Unlock()
+	configs.mu.RLock()
 	v := configs.connections[name]
-	configs.RUnlock()
+	configs.mu.RUnlock()
 	return v
 }
 
