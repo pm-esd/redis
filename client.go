@@ -48,7 +48,7 @@ func (configs *Configs) GetRedis(name string) *Client {
 
 	config, ok := configs.cfg[name]
 	if !ok {
-		Log.Fatal("Redis配置:" + name + "找不到！")
+		Log.Panic("Redis配置:" + name + "找不到！")
 	}
 
 	db := connect(config)
