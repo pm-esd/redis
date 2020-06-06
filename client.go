@@ -104,16 +104,23 @@ type Client struct {
 // NewClient 新客户端
 func NewClient(opts Options) *Client {
 	r := &Client{opts: opts}
+
 	switch opts.Type {
 	// 群集客户端
 	case ClientCluster:
-		r.client = redis.NewClusterClient(opts.GetClusterConfig())
+		tc := redis.NewClusterClient(opts.GetClusterConfig())
+		// redisClient.AddHook()
+		r.client = tc
 	// 标准客户端也是默认值
 	case ClientNormal:
 		fallthrough
 	default:
-		r.client = redis.NewClient(opts.GetNormalConfig())
+		tc := redis.NewClient(opts.GetNormalConfig())
+		// redisClient.AddHook()
+		r.client = tc
+
 	}
+
 	r.fmtString = opts.KeyPrefix + "%s"
 	return r
 }

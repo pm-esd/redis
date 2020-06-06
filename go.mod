@@ -1,8 +1,8 @@
-module github.com/pm-esd/redis
+module github.com/pm-esd/redis/v2
 
 go 1.14
 
 require (
-	github.com/go-redis/redis/v7 v7.2.0
-	github.com/spf13/viper v1.6.2
+	github.com/go-redis/redis/v7 v7.4.0
+	github.com/spf13/viper v1.7.0
 )
