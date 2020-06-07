@@ -1,4 +1,4 @@
-module github.com/pm-esd/redis/v2
+module github.com/pm-esd/redis
 
 go 1.14
 
