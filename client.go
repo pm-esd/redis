@@ -156,80 +156,9 @@ func (r *Client) GetClient() Commander {
 	return r.client
 }
 
-// Incr 将 key 中储存的数字值增一。
-// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。
-// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
-// 本操作的值限制在 64 位(bit)有符号数字表示之内。
-// 执行 INCR 命令之后 key 的值。
-func (r *Client) Incr(key string) *redis.IntCmd {
-	return r.client.Incr(r.k(key))
-}
-
-// IncrBy 将 key 所储存的值加上增量 increment 。
-// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCRBY 命令。
-// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
-// 本操作的值限制在 64 位(bit)有符号数字表示之内。
-// 关于递增(increment) / 递减(decrement)操作的更多信息，参见 INCR 命令。
-// 加上 increment 之后， key 的值。
-func (r *Client) IncrBy(key string, value int64) *redis.IntCmd {
-	return r.client.IncrBy(r.k(key), value)
-}
-
-// Decr 将 key 中储存的数字值减一。
-// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECR 操作。
-// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
-// 本操作的值限制在 64 位(bit)有符号数字表示之内。
-// 关于递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
-// 执行 DECR 命令之后 key 的值。
-func (r *Client) Decr(key string) *redis.IntCmd {
-	return r.client.Decr(r.k(key))
-}
-
-// DecrBy 将 key 所储存的值减去减量 decrement 。
-// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECRBY 操作。
-// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
-// 本操作的值限制在 64 位(bit)有符号数字表示之内。
-// 关于更多递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
-// 减去 decrement 之后， key 的值。
-func (r *Client) DecrBy(key string, value int64) *redis.IntCmd {
-	return r.client.DecrBy(r.k(key), value)
-}
-
 // PExpire 毫秒为单位设置 key 的生存时间
 func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.PExpire(r.k(key), expiration)
-}
-
-// Get 返回 key 所关联的字符串值。
-// 如果 key 不存在那么返回特殊值 nil 。
-// 假如 key 储存的值不是字符串类型，返回一个错误，因为 GET 只能用于处理字符串值。
-// 当 key 不存在时，返回 nil ，否则，返回 key 的值。
-// 如果 key 不是字符串类型，那么返回一个错误。
-func (r *Client) Get(key string) *redis.StringCmd {
-	return r.client.Get(r.k(key))
-}
-
-// GetBit 对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
-// 当 offset 比字符串值的长度大，或者 key 不存在时，返回 0 。
-// 字符串值指定偏移量上的位(bit)。
-func (r *Client) GetBit(key string, offset int64) *redis.IntCmd {
-	return r.client.GetBit(r.k(key), offset)
-}
-
-// GetRange 返回 key 中字符串值的子字符串，字符串的截取范围由 start 和 end 两个偏移量决定(包括 start 和 end 在内)。
-// 负数偏移量表示从字符串最后开始计数， -1 表示最后一个字符， -2 表示倒数第二个，以此类推。
-// GETRANGE 通过保证子字符串的值域(range)不超过实际字符串的值域来处理超出范围的值域请求。
-// 返回截取得出的子字符串。
-func (r *Client) GetRange(key string, start, end int64) *redis.StringCmd {
-	return r.client.GetRange(r.k(key), start, end)
-}
-
-// GetSet 将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
-// 当 key 存在但不是字符串类型时，返回一个错误。
-// 返回给定 key 的旧值。
-// 当 key 没有旧值时，也即是， key 不存在时，返回 nil 。
-func (r *Client) GetSet(key string, value interface{}) *redis.StringCmd {
-	return r.client.GetSet(r.k(key), value)
 }
 
 // MGetByPipeline gets multiple values from keys,Pipeline is used when
@@ -301,330 +230,7 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 	return res, err
 }
 
-// MGet 返回所有(一个或多个)给定 key 的值。
-// 如果给定的 key 里面，有某个 key 不存在，那么这个 key 返回特殊值 nil 。因此，该命令永不失败。
-// 一个包含所有给定 key 的值的列表。
-func (r *Client) MGet(keys ...string) *redis.SliceCmd {
-	return r.client.MGet(r.ks(keys...)...)
-}
 
-//HExists 查看哈希表 key 中，给定域 field 是否存在。
-func (r *Client) HExists(key, field string) *redis.BoolCmd {
-	return r.client.HExists(r.k(key), field)
-}
-
-// HGet 返回哈希表 key 中给定域 field 的值。
-func (r *Client) HGet(key, field string) *redis.StringCmd {
-	return r.client.HGet(r.k(key), field)
-}
-
-// HGetAll 返回哈希表 key 中，所有的域和值。
-// 在返回值里，紧跟每个域名(field name)之后是域的值(value)，所以返回值的长度是哈希表大小的两倍。
-func (r *Client) HGetAll(key string) *redis.StringStringMapCmd {
-	return r.client.HGetAll(r.k(key))
-}
-
-// HIncrBy 为哈希表 key 中的域 field 的值加上增量 increment 。
-// 增量也可以为负数，相当于对给定域进行减法操作。
-// 如果 key 不存在，一个新的哈希表被创建并执行 HINCRBY 命令。
-// 如果域 field 不存在，那么在执行命令前，域的值被初始化为 0 。
-// 对一个储存字符串值的域 field 执行 HINCRBY 命令将造成一个错误。
-// 本操作的值被限制在 64 位(bit)有符号数字表示之内。
-func (r *Client) HIncrBy(key, field string, incr int64) *redis.IntCmd {
-	return r.client.HIncrBy(r.k(key), field, incr)
-}
-
-// HIncrByFloat 为哈希表 key 中的域 field 加上浮点数增量 increment 。
-// 如果哈希表中没有域 field ，那么 HINCRBYFLOAT 会先将域 field 的值设为 0 ，然后再执行加法操作。
-// 如果键 key 不存在，那么 HINCRBYFLOAT 会先创建一个哈希表，再创建域 field ，最后再执行加法操作。
-func (r *Client) HIncrByFloat(key, field string, incr float64) *redis.FloatCmd {
-	return r.client.HIncrByFloat(r.k(key), field, incr)
-}
-
-// HKeys 返回哈希表 key 中的所有域。
-func (r *Client) HKeys(key string) *redis.StringSliceCmd {
-	return r.client.HKeys(r.k(key))
-}
-
-//HLen 返回哈希表 key 中域的数量。
-func (r *Client) HLen(key string) *redis.IntCmd {
-	return r.client.HLen(r.k(key))
-}
-
-// HMGet 返回哈希表 key 中，一个或多个给定域的值。
-// 如果给定的域不存在于哈希表，那么返回一个 nil 值。
-// 因为不存在的 key 被当作一个空哈希表来处理，所以对一个不存在的 key 进行 HMGET 操作将返回一个只带有 nil 值的表。
-func (r *Client) HMGet(key string, fields ...string) *redis.SliceCmd {
-	return r.client.HMGet(r.k(key), fields...)
-}
-
-// HMSet 同时将多个 field-value (域-值)对设置到哈希表 key 中。
-// 此命令会覆盖哈希表中已存在的域。
-// 如果 key 不存在，一个空哈希表被创建并执行 HMSET 操作。
-func (r *Client) HMSet(key string, value ...interface{}) *redis.BoolCmd {
-	return r.client.HMSet(r.k(key), value...)
-}
-
-// HSet 将哈希表 key 中的域 field 的值设为 value 。
-// 如果 key 不存在，一个新的哈希表被创建并进行 HSET 操作。
-// 如果域 field 已经存在于哈希表中，旧值将被覆盖。
-func (r *Client) HSet(key string, value ...interface{}) *redis.IntCmd {
-	return r.client.HSet(r.k(key), value...)
-}
-
-// HSetNX 将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在。
-// 若域 field 已经存在，该操作无效。
-// 如果 key 不存在，一个新哈希表被创建并执行 HSETNX 命令。
-func (r *Client) HSetNX(key, field string, value interface{}) *redis.BoolCmd {
-	return r.client.HSetNX(r.k(key), field, value)
-}
-
-// HVals 返回哈希表 key 中所有域的值。
-func (r *Client) HVals(key string) *redis.StringSliceCmd {
-	return r.client.HVals(r.k(key))
-}
-
-// HDel 删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
-func (r *Client) HDel(key string, fields ...string) *redis.IntCmd {
-	return r.client.HDel(r.k(key), fields...)
-}
-
-// LIndex 返回列表 key 中，下标为 index 的元素。
-// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
-// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
-// 如果 key 不是列表类型，返回一个错误。
-func (r *Client) LIndex(key string, index int64) *redis.StringCmd {
-	return r.client.LIndex(r.k(key), index)
-}
-
-// LInsert 将值 value 插入到列表 key 当中，位于值 pivot 之前或之后。
-// 当 pivot 不存在于列表 key 时，不执行任何操作。
-// 当 key 不存在时， key 被视为空列表，不执行任何操作。
-// 如果 key 不是列表类型，返回一个错误。
-func (r *Client) LInsert(key, op string, pivot, value interface{}) *redis.IntCmd {
-	return r.client.LInsert(r.k(key), op, pivot, value)
-}
-
-// LInsertAfter 同 LInsert
-func (r *Client) LInsertAfter(key string, pivot, value interface{}) *redis.IntCmd {
-	return r.client.LInsertAfter(r.k(key), pivot, value)
-}
-
-// LInsertBefore 同 LInsert
-func (r *Client) LInsertBefore(key string, pivot, value interface{}) *redis.IntCmd {
-	return r.client.LInsertBefore(r.k(key), pivot, value)
-}
-
-// LLen 返回列表 key 的长度。
-// 如果 key 不存在，则 key 被解释为一个空列表，返回 0 .
-// 如果 key 不是列表类型，返回一个错误。
-func (r *Client) LLen(key string) *redis.IntCmd {
-	return r.client.LLen(r.k(key))
-}
-
-// LPop 移除并返回列表 key 的头元素。
-func (r *Client) LPop(key string) *redis.StringCmd {
-	return r.client.LPop(r.k(key))
-}
-
-// LPush 将一个或多个值 value 插入到列表 key 的表头
-// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表头
-// 如果 key 不存在，一个空列表会被创建并执行 LPush 操作。
-// 当 key 存在但不是列表类型时，返回一个错误。
-func (r *Client) LPush(key string, values ...interface{}) *redis.IntCmd {
-	return r.client.LPush(r.k(key), values...)
-}
-
-// LPushX 将值 value 插入到列表 key 的表头，当且仅当 key 存在并且是一个列表。
-// 和 LPUSH 命令相反，当 key 不存在时， LPUSHX 命令什么也不做。
-func (r *Client) LPushX(key string, value interface{}) *redis.IntCmd {
-	return r.client.LPushX(r.k(key), value)
-}
-
-// LRange 返回列表 key 中指定区间内的元素，区间以偏移量 start 和 stop 指定。
-// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
-// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
-func (r *Client) LRange(key string, start, stop int64) *redis.StringSliceCmd {
-	return r.client.LRange(r.k(key), start, stop)
-}
-
-// LRem 根据参数 count 的值，移除列表中与参数 value 相等的元素。
-func (r *Client) LRem(key string, count int64, value interface{}) *redis.IntCmd {
-	return r.client.LRem(r.k(key), count, value)
-}
-
-// LSet 将列表 key 下标为 index 的元素的值设置为 value 。
-// 当 index 参数超出范围，或对一个空列表( key 不存在)进行 LSET 时，返回一个错误。
-// 关于列表下标的更多信息，请参考 LINDEX 命令。
-func (r *Client) LSet(key string, index int64, value interface{}) *redis.StatusCmd {
-	return r.client.LSet(r.k(key), index, value)
-}
-
-// LTrim 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除。
-// 举个例子，执行命令 LTRIM list 0 2 ，表示只保留列表 list 的前三个元素，其余元素全部删除。
-// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
-// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
-// 当 key 不是列表类型时，返回一个错误。
-func (r *Client) LTrim(key string, start, stop int64) *redis.StatusCmd {
-	return r.client.LTrim(r.k(key), start, stop)
-}
-
-// RPop 移除并返回列表 key 的尾元素。
-func (r *Client) RPop(key string) *redis.StringCmd {
-	return r.client.RPop(r.k(key))
-}
-
-// RPopLPush 命令 RPOPLPUSH 在一个原子时间内，执行以下两个动作：
-// 将列表 source 中的最后一个元素(尾元素)弹出，并返回给客户端。
-// 将 source 弹出的元素插入到列表 destination ，作为 destination 列表的的头元素。
-// 举个例子，你有两个列表 source 和 destination ， source 列表有元素 a, b, c ， destination 列表有元素 x, y, z ，执行 RPOPLPUSH source destination 之后， source 列表包含元素 a, b ， destination 列表包含元素 c, x, y, z ，并且元素 c 会被返回给客户端。
-// 如果 source 不存在，值 nil 被返回，并且不执行其他动作。
-// 如果 source 和 destination 相同，则列表中的表尾元素被移动到表头，并返回该元素，可以把这种特殊情况视作列表的旋转(rotation)操作。
-func (r *Client) RPopLPush(source, destination string) *redis.StringCmd {
-	return r.client.RPopLPush(r.k(source), r.k(destination))
-}
-
-// RPush 将一个或多个值 value 插入到列表 key 的表尾(最右边)。
-// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表尾：比如对一个空列表 mylist 执行 RPUSH mylist a b c ，得出的结果列表为 a b c ，等同于执行命令 RPUSH mylist a 、 RPUSH mylist b 、 RPUSH mylist c 。
-// 如果 key 不存在，一个空列表会被创建并执行 RPUSH 操作。
-// 当 key 存在但不是列表类型时，返回一个错误。
-func (r *Client) RPush(key string, values ...interface{}) *redis.IntCmd {
-	return r.client.RPush(r.k(key), values...)
-}
-
-// RPushX 将值 value 插入到列表 key 的表尾，当且仅当 key 存在并且是一个列表。
-// 和 RPUSH 命令相反，当 key 不存在时， RPUSHX 命令什么也不做。
-func (r *Client) RPushX(key string, value interface{}) *redis.IntCmd {
-	return r.client.RPushX(r.k(key), value)
-}
-
-// Set 将字符串值 value 关联到 key 。
-// 如果 key 已经持有其他值， SET 就覆写旧值，无视类型。
-// 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
-func (r *Client) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	return r.client.Set(r.k(key), value, expiration)
-}
-
-// Append 如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
-// 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
-func (r *Client) Append(key, value string) *redis.IntCmd {
-	return r.client.Append(r.k(key), value)
-}
-
-// MSet 同时设置一个或多个 key-value 对。
-func (r *Client) MSet(values ...interface{}) *redis.StatusCmd {
-	return r.client.MSet(values...)
-}
-
-// MSetNX 同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
-// 即使只有一个给定 key 已存在， MSETNX 也会拒绝执行所有给定 key 的设置操作。
-// MSETNX 是原子性的，因此它可以用作设置多个不同 key 表示不同字段(field)的唯一性逻辑对象(unique logic object)，所有字段要么全被设置，要么全不被设置。
-func (r *Client) MSetNX(values ...interface{}) *redis.BoolCmd {
-	return r.client.MSetNX(values...)
-}
-
-// SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
-// 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
-// 当 key 不是集合类型时，返回一个错误。
-func (r *Client) SAdd(key string, members ...interface{}) *redis.IntCmd {
-	return r.client.SAdd(r.k(key), members...)
-}
-
-// SCard 返回集合 key 的基数(集合中元素的数量)。
-func (r *Client) SCard(key string) *redis.IntCmd {
-	return r.client.SCard(r.k(key))
-}
-
-// SDiff 返回一个集合的全部成员，该集合是所有给定集合之间的差集。
-// 不存在的 key 被视为空集。
-func (r *Client) SDiff(keys ...string) *redis.StringSliceCmd {
-	return r.client.SDiff(r.ks(keys...)...)
-}
-
-// SDiffStore 这个命令的作用和 SDIFF 类似，但它将结果保存到 destination 集合，而不是简单地返回结果集。
-// 如果 destination 集合已经存在，则将其覆盖。
-// destination 可以是 key 本身。
-func (r *Client) SDiffStore(destination string, keys ...string) *redis.IntCmd {
-	return r.client.SDiffStore(r.k(destination), r.ks(keys...)...)
-}
-
-// SInter 返回一个集合的全部成员，该集合是所有给定集合的交集。
-// 不存在的 key 被视为空集。
-// 当给定集合当中有一个空集时，结果也为空集(根据集合运算定律)。
-func (r *Client) SInter(keys ...string) *redis.StringSliceCmd {
-	return r.client.SInter(r.ks(keys...)...)
-}
-
-// SInterStore 这个命令类似于 SINTER 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
-// 如果 destination 集合已经存在，则将其覆盖。
-// destination 可以是 key 本身。
-func (r *Client) SInterStore(destination string, keys ...string) *redis.IntCmd {
-	return r.client.SInterStore(r.k(destination), r.ks(keys...)...)
-}
-
-// SIsMember 判断 member 元素是否集合 key 的成员。
-func (r *Client) SIsMember(key string, member interface{}) *redis.BoolCmd {
-	return r.client.SIsMember(r.k(key), member)
-}
-
-// SMembers 返回集合 key 中的所有成员。
-// 不存在的 key 被视为空集合。
-func (r *Client) SMembers(key string) *redis.StringSliceCmd {
-	return r.client.SMembers(r.k(key))
-}
-
-// SMove 将 member 元素从 source 集合移动到 destination 集合。
-// SMOVE 是原子性操作。
-// 如果 source 集合不存在或不包含指定的 member 元素，则 SMOVE 命令不执行任何操作，仅返回 0 。否则， member 元素从 source 集合中被移除，并添加到 destination 集合中去。
-// 当 destination 集合已经包含 member 元素时， SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
-// 当 source 或 destination 不是集合类型时，返回一个错误。
-func (r *Client) SMove(source, destination string, member interface{}) *redis.BoolCmd {
-	return r.client.SMove(r.k(source), r.k(destination), member)
-}
-
-// SPop 移除并返回集合中的一个随机元素。
-// 如果只想获取一个随机元素，但不想该元素从集合中被移除的话，可以使用 SRANDMEMBER 命令。
-func (r *Client) SPop(key string) *redis.StringCmd {
-	return r.client.SPop(r.k(key))
-}
-
-// SPopN -> SPop
-func (r *Client) SPopN(key string, count int64) *redis.StringSliceCmd {
-	return r.client.SPopN(r.k(key), count)
-}
-
-// SRandMember 如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
-// 从 Redis 2.6 版本开始， SRANDMEMBER 命令接受可选的 count 参数：
-// 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。如果 count 大于等于集合基数，那么返回整个集合。
-// 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
-// 该操作和 SPOP 相似，但 SPOP 将随机元素从集合中移除并返回，而 SRANDMEMBER 则仅仅返回随机元素，而不对集合进行任何改动。
-func (r *Client) SRandMember(key string) *redis.StringCmd {
-	return r.client.SRandMember(r.k(key))
-}
-
-// SRandMemberN -> SRandMember
-func (r *Client) SRandMemberN(key string, count int64) *redis.StringSliceCmd {
-	return r.client.SRandMemberN(r.k(key), count)
-}
-
-// SRem 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
-// 当 key 不是集合类型，返回一个错误。
-func (r *Client) SRem(key string, members ...interface{}) *redis.IntCmd {
-	return r.client.SRem(r.k(key), members...)
-}
-
-// SUnion 返回一个集合的全部成员，该集合是所有给定集合的并集。
-// 不存在的 key 被视为空集。
-func (r *Client) SUnion(keys ...string) *redis.StringSliceCmd {
-	return r.client.SUnion(r.ks(keys...)...)
-}
-
-// SUnionStore 这个命令类似于 SUNION 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
-// 如果 destination 已经存在，则将其覆盖。
-// destination 可以是 key 本身。
-func (r *Client) SUnionStore(destination string, keys ...string) *redis.IntCmd {
-	return r.client.SUnionStore(r.k(destination), r.ks(keys...)...)
-}
 
 // ZAdd 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
 // 如果某个 member 已经是有序集的成员，那么更新这个 member 的 score 值，并通过重新插入这个 member 元素，来保证该 member 在正确的位置上。
@@ -807,47 +413,6 @@ func (r *Client) ZScore(key, member string) *redis.FloatCmd {
 // 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之 和 。
 func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
 	return r.client.ZUnionStore(r.k(dest), store)
-}
-
-// BLPop 是列表的阻塞式(blocking)弹出原语。
-// 它是 LPop 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BLPop 命令阻塞，直到等待超时或发现可弹出元素为止。
-// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的头元素。
-func (r *Client) BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
-	return r.client.BLPop(timeout, r.ks(keys...)...)
-}
-
-// BRPop 是列表的阻塞式(blocking)弹出原语。
-// 它是 RPOP 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BRPOP 命令阻塞，直到等待超时或发现可弹出元素为止。
-// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的尾部元素。
-// 关于阻塞操作的更多信息，请查看 BLPOP 命令， BRPOP 除了弹出元素的位置和 BLPOP 不同之外，其他表现一致。
-func (r *Client) BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
-	return r.client.BRPop(timeout, r.ks(keys...)...)
-}
-
-// BRPopLPush 是 RPOPLPUSH 的阻塞版本，当给定列表 source 不为空时， BRPOPLPUSH 的表现和 RPOPLPUSH 一样。
-// 当列表 source 为空时， BRPOPLPUSH 命令将阻塞连接，直到等待超时，或有另一个客户端对 source 执行 LPUSH 或 RPUSH 命令为止。
-func (r *Client) BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd {
-	return r.client.BRPopLPush(r.k(source), r.k(destination), timeout)
-}
-
-// Scan 命令及其相关的 SSCAN 命令、 HSCAN 命令和 ZSCAN 命令都用于增量地迭代（incrementally iterate）一集元素
-func (r *Client) Scan(cursor uint64, match string, count int64) *redis.ScanCmd {
-	return r.client.Scan(cursor, r.k(match), count)
-}
-
-// SScan 详细信息请参考 SCAN 命令。
-func (r *Client) SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
-	return r.client.SScan(r.k(key), cursor, match, count)
-}
-
-// ZScan 详细信息请参考 SCAN 命令。
-func (r *Client) ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
-	return r.client.ZScan(r.k(key), cursor, match, count)
-}
-
-// HScan 详细信息请参考 SCAN 命令。
-func (r *Client) HScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
-	return r.client.HScan(r.k(key), cursor, match, count)
 }
 
 // Publish 将信息 message 发送到指定的频道 channel 。
@@ -1068,6 +633,560 @@ func (r *Client) TTL(key string) *redis.DurationCmd {
 func (r *Client) Type(key string) *redis.StatusCmd {
 	return r.client.Type(r.k(key))
 }
+
+// Scan 命令及其相关的 SSCAN 命令、 HSCAN 命令和 ZSCAN 命令都用于增量地迭代（incrementally iterate）一集元素
+func (r *Client) Scan(cursor uint64, match string, count int64) *redis.ScanCmd {
+	return r.client.Scan(cursor, r.k(match), count)
+}
+
+// SScan 详细信息请参考 SCAN 命令。
+func (r *Client) SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
+	return r.client.SScan(r.k(key), cursor, match, count)
+}
+
+// HScan 详细信息请参考 SCAN 命令。
+func (r *Client) HScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
+	return r.client.HScan(r.k(key), cursor, match, count)
+}
+
+// ZScan 详细信息请参考 SCAN 命令。
+func (r *Client) ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
+	return r.client.ZScan(r.k(key), cursor, match, count)
+}
+
+// Append 如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
+// 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
+func (r *Client) Append(key, value string) *redis.IntCmd {
+	return r.client.Append(r.k(key), value)
+}
+
+// BitCount 计算给定字符串中，被设置为 1 的比特位的数量。
+// 一般情况下，给定的整个字符串都会被进行计数，通过指定额外的 start 或 end 参数，可以让计数只在特定的位上进行。
+// start 和 end 参数的设置和 GETRANGE 命令类似，都可以使用负数值：比如 -1 表示最后一个位，而 -2 表示倒数第二个位，以此类推。
+// 不存在的 key 被当成是空字符串来处理，因此对一个不存在的 key 进行 BITCOUNT 操作，结果为 0 。
+func (r *Client) BitCount(key string, bitCount *redis.BitCount) *redis.IntCmd {
+	return r.client.BitCount(r.k(key), bitCount)
+}
+
+// BitOpAnd -> BitCount
+func (r *Client) BitOpAnd(destKey string, keys ...string) *redis.IntCmd {
+	return r.client.BitOpAnd(r.k(destKey), r.ks(keys...)...)
+}
+
+// BitOpOr -> BitCount
+func (r *Client) BitOpOr(destKey string, keys ...string) *redis.IntCmd {
+	return r.client.BitOpOr(r.k(destKey), r.ks(keys...)...)
+}
+
+// BitOpXor -> BitCount
+func (r *Client) BitOpXor(destKey string, keys ...string) *redis.IntCmd {
+	return r.client.BitOpXor(r.k(destKey), r.ks(keys...)...)
+}
+
+// BitOpNot -> BitCount
+func (r *Client) BitOpNot(destKey string, key string) *redis.IntCmd {
+	return r.client.BitOpXor(r.k(destKey), r.k(key))
+}
+
+// BitPos -> BitCount
+func (r *Client) BitPos(key string, bit int64, pos ...int64) *redis.IntCmd {
+	return r.client.BitPos(r.k(key), bit, pos...)
+}
+
+// BitField -> BitCount
+func (r *Client) BitField(key string, args ...interface{}) *redis.IntSliceCmd {
+	return r.client.BitField(r.k(key), args...)
+}
+
+// Decr 将 key 中储存的数字值减一。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECR 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
+// 执行 DECR 命令之后 key 的值。
+func (r *Client) Decr(key string) *redis.IntCmd {
+	return r.client.Decr(r.k(key))
+}
+
+// DecrBy 将 key 所储存的值减去减量 decrement 。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECRBY 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于更多递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
+// 减去 decrement 之后， key 的值。
+func (r *Client) DecrBy(key string, value int64) *redis.IntCmd {
+	return r.client.DecrBy(r.k(key), value)
+}
+
+// Get 返回 key 所关联的字符串值。
+// 如果 key 不存在那么返回特殊值 nil 。
+// 假如 key 储存的值不是字符串类型，返回一个错误，因为 GET 只能用于处理字符串值。
+// 当 key 不存在时，返回 nil ，否则，返回 key 的值。
+// 如果 key 不是字符串类型，那么返回一个错误。
+func (r *Client) Get(key string) *redis.StringCmd {
+	return r.client.Get(r.k(key))
+}
+
+// GetBit 对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
+// 当 offset 比字符串值的长度大，或者 key 不存在时，返回 0 。
+// 字符串值指定偏移量上的位(bit)。
+func (r *Client) GetBit(key string, offset int64) *redis.IntCmd {
+	return r.client.GetBit(r.k(key), offset)
+}
+
+// GetRange 返回 key 中字符串值的子字符串，字符串的截取范围由 start 和 end 两个偏移量决定(包括 start 和 end 在内)。
+// 负数偏移量表示从字符串最后开始计数， -1 表示最后一个字符， -2 表示倒数第二个，以此类推。
+// GETRANGE 通过保证子字符串的值域(range)不超过实际字符串的值域来处理超出范围的值域请求。
+// 返回截取得出的子字符串。
+func (r *Client) GetRange(key string, start, end int64) *redis.StringCmd {
+	return r.client.GetRange(r.k(key), start, end)
+}
+
+// GetSet 将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
+// 当 key 存在但不是字符串类型时，返回一个错误。
+// 返回给定 key 的旧值。
+// 当 key 没有旧值时，也即是， key 不存在时，返回 nil 。
+func (r *Client) GetSet(key string, value interface{}) *redis.StringCmd {
+	return r.client.GetSet(r.k(key), value)
+}
+
+// Incr 将 key 中储存的数字值增一。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 执行 INCR 命令之后 key 的值。
+func (r *Client) Incr(key string) *redis.IntCmd {
+	return r.client.Incr(r.k(key))
+}
+
+// IncrBy 将 key 所储存的值加上增量 increment 。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCRBY 命令。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于递增(increment) / 递减(decrement)操作的更多信息，参见 INCR 命令。
+// 加上 increment 之后， key 的值。
+func (r *Client) IncrBy(key string, value int64) *redis.IntCmd {
+	return r.client.IncrBy(r.k(key), value)
+}
+
+// IncrByFloat 为 key 中所储存的值加上浮点数增量 increment 。
+// 如果 key 不存在，那么 INCRBYFLOAT 会先将 key 的值设为 0 ，再执行加法操作。
+// 如果命令执行成功，那么 key 的值会被更新为（执行加法之后的）新值，并且新值会以字符串的形式返回给调用者。
+func (r *Client) IncrByFloat(key string, value float64) *redis.FloatCmd {
+	return r.client.IncrByFloat(r.k(key), value)
+}
+
+// MGet 返回所有(一个或多个)给定 key 的值。
+// 如果给定的 key 里面，有某个 key 不存在，那么这个 key 返回特殊值 nil 。因此，该命令永不失败。
+// 一个包含所有给定 key 的值的列表。
+func (r *Client) MGet(keys ...string) *redis.SliceCmd {
+	return r.client.MGet(r.ks(keys...)...)
+}
+
+// MSet 同时设置一个或多个 key-value 对。
+func (r *Client) MSet(values ...interface{}) *redis.StatusCmd {
+	return r.client.MSet(values...)
+}
+
+// MSetNX 同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
+// 即使只有一个给定 key 已存在， MSETNX 也会拒绝执行所有给定 key 的设置操作。
+// MSETNX 是原子性的，因此它可以用作设置多个不同 key 表示不同字段(field)的唯一性逻辑对象(unique logic object)，所有字段要么全被设置，要么全不被设置。
+func (r *Client) MSetNX(values ...interface{}) *redis.BoolCmd {
+	return r.client.MSetNX(values...)
+}
+
+// Set 将字符串值 value 关联到 key 。
+// 如果 key 已经持有其他值， SET 就覆写旧值，无视类型。
+// 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
+func (r *Client) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
+	return r.client.Set(r.k(key), value, expiration)
+}
+
+// SetBit 对 key 所储存的字符串值，设置或清除指定偏移量上的位(bit)。
+// 位的设置或清除取决于 value 参数，可以是 0 也可以是 1 。
+// 当 key 不存在时，自动生成一个新的字符串值。
+// 字符串会进行伸展(grown)以确保它可以将 value 保存在指定的偏移量上。当字符串值进行伸展时，空白位置以 0 填充。
+// offset 参数必须大于或等于 0 ，小于 2^32 (bit 映射被限制在 512 MB 之内)。
+func (r *Client) SetBit(key string, offset int64, value int) *redis.IntCmd {
+	return r.client.SetBit(r.k(key), offset, value)
+}
+
+// SetNX 将 key 的值设为 value ，当且仅当 key 不存在。
+// 若给定的 key 已经存在，则 SETNX 不做任何动作。
+// SETNX 是『SET if Not eXists』(如果不存在，则 SET)的简写。
+func (r *Client) SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd {
+	return r.client.SetNX(r.k(key), value, expiration)
+}
+
+// SetXX -> SetNX
+func (r *Client) SetXX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd {
+	return r.client.SetXX(r.k(key), value, expiration)
+}
+
+// SetRange 用 value 参数覆写(overwrite)给定 key 所储存的字符串值，从偏移量 offset 开始。
+// 不存在的 key 当作空白字符串处理。
+func (r *Client) SetRange(key string, offset int64, value string) *redis.IntCmd {
+	return r.client.SetRange(r.k(key), offset, value)
+}
+
+// StrLen 返回 key 所储存的字符串值的长度。
+// 当 key 储存的不是字符串值时，返回一个错误。
+func (r *Client) StrLen(key string) *redis.IntCmd {
+	return r.client.StrLen(r.k(key))
+}
+
+// HDel 删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
+func (r *Client) HDel(key string, fields ...string) *redis.IntCmd {
+	return r.client.HDel(r.k(key), fields...)
+}
+
+//HExists 查看哈希表 key 中，给定域 field 是否存在。
+func (r *Client) HExists(key, field string) *redis.BoolCmd {
+	return r.client.HExists(r.k(key), field)
+}
+
+// HGet 返回哈希表 key 中给定域 field 的值。
+func (r *Client) HGet(key, field string) *redis.StringCmd {
+	return r.client.HGet(r.k(key), field)
+}
+
+// HGetAll 返回哈希表 key 中，所有的域和值。
+// 在返回值里，紧跟每个域名(field name)之后是域的值(value)，所以返回值的长度是哈希表大小的两倍。
+func (r *Client) HGetAll(key string) *redis.StringStringMapCmd {
+	return r.client.HGetAll(r.k(key))
+}
+
+// HIncrBy 为哈希表 key 中的域 field 的值加上增量 increment 。
+// 增量也可以为负数，相当于对给定域进行减法操作。
+// 如果 key 不存在，一个新的哈希表被创建并执行 HINCRBY 命令。
+// 如果域 field 不存在，那么在执行命令前，域的值被初始化为 0 。
+// 对一个储存字符串值的域 field 执行 HINCRBY 命令将造成一个错误。
+// 本操作的值被限制在 64 位(bit)有符号数字表示之内。
+func (r *Client) HIncrBy(key, field string, incr int64) *redis.IntCmd {
+	return r.client.HIncrBy(r.k(key), field, incr)
+}
+
+// HIncrByFloat 为哈希表 key 中的域 field 加上浮点数增量 increment 。
+// 如果哈希表中没有域 field ，那么 HINCRBYFLOAT 会先将域 field 的值设为 0 ，然后再执行加法操作。
+// 如果键 key 不存在，那么 HINCRBYFLOAT 会先创建一个哈希表，再创建域 field ，最后再执行加法操作。
+func (r *Client) HIncrByFloat(key, field string, incr float64) *redis.FloatCmd {
+	return r.client.HIncrByFloat(r.k(key), field, incr)
+}
+
+// HKeys 返回哈希表 key 中的所有域。
+func (r *Client) HKeys(key string) *redis.StringSliceCmd {
+	return r.client.HKeys(r.k(key))
+}
+
+//HLen 返回哈希表 key 中域的数量。
+func (r *Client) HLen(key string) *redis.IntCmd {
+	return r.client.HLen(r.k(key))
+}
+
+// HMGet 返回哈希表 key 中，一个或多个给定域的值。
+// 如果给定的域不存在于哈希表，那么返回一个 nil 值。
+// 因为不存在的 key 被当作一个空哈希表来处理，所以对一个不存在的 key 进行 HMGET 操作将返回一个只带有 nil 值的表。
+func (r *Client) HMGet(key string, fields ...string) *redis.SliceCmd {
+	return r.client.HMGet(r.k(key), fields...)
+}
+
+// HSet 将哈希表 key 中的域 field 的值设为 value 。
+// 如果 key 不存在，一个新的哈希表被创建并进行 HSET 操作。
+// 如果域 field 已经存在于哈希表中，旧值将被覆盖。
+func (r *Client) HSet(key string, value ...interface{}) *redis.IntCmd {
+	return r.client.HSet(r.k(key), value...)
+}
+
+// HMSet 同时将多个 field-value (域-值)对设置到哈希表 key 中。
+// 此命令会覆盖哈希表中已存在的域。
+// 如果 key 不存在，一个空哈希表被创建并执行 HMSET 操作。
+func (r *Client) HMSet(key string, value ...interface{}) *redis.BoolCmd {
+	return r.client.HMSet(r.k(key), value...)
+}
+
+// HSetNX 将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在。
+// 若域 field 已经存在，该操作无效。
+// 如果 key 不存在，一个新哈希表被创建并执行 HSETNX 命令。
+func (r *Client) HSetNX(key, field string, value interface{}) *redis.BoolCmd {
+	return r.client.HSetNX(r.k(key), field, value)
+}
+
+// HVals 返回哈希表 key 中所有域的值。
+func (r *Client) HVals(key string) *redis.StringSliceCmd {
+	return r.client.HVals(r.k(key))
+}
+
+// BLPop 是列表的阻塞式(blocking)弹出原语。
+// 它是 LPop 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BLPop 命令阻塞，直到等待超时或发现可弹出元素为止。
+// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的头元素。
+func (r *Client) BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
+	return r.client.BLPop(timeout, r.ks(keys...)...)
+}
+
+// BRPopLPush 是 RPOPLPUSH 的阻塞版本，当给定列表 source 不为空时， BRPOPLPUSH 的表现和 RPOPLPUSH 一样。
+// 当列表 source 为空时， BRPOPLPUSH 命令将阻塞连接，直到等待超时，或有另一个客户端对 source 执行 LPUSH 或 RPUSH 命令为止。
+func (r *Client) BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd {
+	return r.client.BRPopLPush(r.k(source), r.k(destination), timeout)
+}
+
+// LIndex 返回列表 key 中，下标为 index 的元素。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+// 如果 key 不是列表类型，返回一个错误。
+func (r *Client) LIndex(key string, index int64) *redis.StringCmd {
+	return r.client.LIndex(r.k(key), index)
+}
+
+// LInsert 将值 value 插入到列表 key 当中，位于值 pivot 之前或之后。
+// 当 pivot 不存在于列表 key 时，不执行任何操作。
+// 当 key 不存在时， key 被视为空列表，不执行任何操作。
+// 如果 key 不是列表类型，返回一个错误。
+func (r *Client) LInsert(key, op string, pivot, value interface{}) *redis.IntCmd {
+	return r.client.LInsert(r.k(key), op, pivot, value)
+}
+
+// LInsertAfter 同 LInsert
+func (r *Client) LInsertAfter(key string, pivot, value interface{}) *redis.IntCmd {
+	return r.client.LInsertAfter(r.k(key), pivot, value)
+}
+
+// LInsertBefore 同 LInsert
+func (r *Client) LInsertBefore(key string, pivot, value interface{}) *redis.IntCmd {
+	return r.client.LInsertBefore(r.k(key), pivot, value)
+}
+
+// LLen 返回列表 key 的长度。
+// 如果 key 不存在，则 key 被解释为一个空列表，返回 0 .
+// 如果 key 不是列表类型，返回一个错误。
+func (r *Client) LLen(key string) *redis.IntCmd {
+	return r.client.LLen(r.k(key))
+}
+
+// LPop 移除并返回列表 key 的头元素。
+func (r *Client) LPop(key string) *redis.StringCmd {
+	return r.client.LPop(r.k(key))
+}
+
+// LPush 将一个或多个值 value 插入到列表 key 的表头
+// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表头
+// 如果 key 不存在，一个空列表会被创建并执行 LPush 操作。
+// 当 key 存在但不是列表类型时，返回一个错误。
+func (r *Client) LPush(key string, values ...interface{}) *redis.IntCmd {
+	return r.client.LPush(r.k(key), values...)
+}
+
+// LPushX 将值 value 插入到列表 key 的表头，当且仅当 key 存在并且是一个列表。
+// 和 LPUSH 命令相反，当 key 不存在时， LPUSHX 命令什么也不做。
+func (r *Client) LPushX(key string, value interface{}) *redis.IntCmd {
+	return r.client.LPushX(r.k(key), value)
+}
+
+// LRange 返回列表 key 中指定区间内的元素，区间以偏移量 start 和 stop 指定。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+func (r *Client) LRange(key string, start, stop int64) *redis.StringSliceCmd {
+	return r.client.LRange(r.k(key), start, stop)
+}
+
+// LRem 根据参数 count 的值，移除列表中与参数 value 相等的元素。
+func (r *Client) LRem(key string, count int64, value interface{}) *redis.IntCmd {
+	return r.client.LRem(r.k(key), count, value)
+}
+
+// LSet 将列表 key 下标为 index 的元素的值设置为 value 。
+// 当 index 参数超出范围，或对一个空列表( key 不存在)进行 LSET 时，返回一个错误。
+// 关于列表下标的更多信息，请参考 LINDEX 命令。
+func (r *Client) LSet(key string, index int64, value interface{}) *redis.StatusCmd {
+	return r.client.LSet(r.k(key), index, value)
+}
+
+// LTrim 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除。
+// 举个例子，执行命令 LTRIM list 0 2 ，表示只保留列表 list 的前三个元素，其余元素全部删除。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+// 当 key 不是列表类型时，返回一个错误。
+func (r *Client) LTrim(key string, start, stop int64) *redis.StatusCmd {
+	return r.client.LTrim(r.k(key), start, stop)
+}
+
+// BRPop 是列表的阻塞式(blocking)弹出原语。
+// 它是 RPOP 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BRPOP 命令阻塞，直到等待超时或发现可弹出元素为止。
+// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的尾部元素。
+// 关于阻塞操作的更多信息，请查看 BLPOP 命令， BRPOP 除了弹出元素的位置和 BLPOP 不同之外，其他表现一致。
+func (r *Client) BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
+	return r.client.BRPop(timeout, r.ks(keys...)...)
+}
+
+// RPopLPush 命令 RPOPLPUSH 在一个原子时间内，执行以下两个动作：
+// 将列表 source 中的最后一个元素(尾元素)弹出，并返回给客户端。
+// 将 source 弹出的元素插入到列表 destination ，作为 destination 列表的的头元素。
+// 举个例子，你有两个列表 source 和 destination ， source 列表有元素 a, b, c ， destination 列表有元素 x, y, z ，执行 RPOPLPUSH source destination 之后， source 列表包含元素 a, b ， destination 列表包含元素 c, x, y, z ，并且元素 c 会被返回给客户端。
+// 如果 source 不存在，值 nil 被返回，并且不执行其他动作。
+// 如果 source 和 destination 相同，则列表中的表尾元素被移动到表头，并返回该元素，可以把这种特殊情况视作列表的旋转(rotation)操作。
+func (r *Client) RPopLPush(source, destination string) *redis.StringCmd {
+	return r.client.RPopLPush(r.k(source), r.k(destination))
+}
+
+// RPush 将一个或多个值 value 插入到列表 key 的表尾(最右边)。
+// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表尾：比如对一个空列表 mylist 执行 RPUSH mylist a b c ，得出的结果列表为 a b c ，等同于执行命令 RPUSH mylist a 、 RPUSH mylist b 、 RPUSH mylist c 。
+// 如果 key 不存在，一个空列表会被创建并执行 RPUSH 操作。
+// 当 key 存在但不是列表类型时，返回一个错误。
+func (r *Client) RPush(key string, values ...interface{}) *redis.IntCmd {
+	return r.client.RPush(r.k(key), values...)
+}
+
+// RPushX 将值 value 插入到列表 key 的表尾，当且仅当 key 存在并且是一个列表。
+// 和 RPUSH 命令相反，当 key 不存在时， RPUSHX 命令什么也不做。
+func (r *Client) RPushX(key string, value interface{}) *redis.IntCmd {
+	return r.client.RPushX(r.k(key), value)
+}
+
+// RPop 移除并返回列表 key 的尾元素。
+func (r *Client) RPop(key string) *redis.StringCmd {
+	return r.client.RPop(r.k(key))
+}
+
+
+
+// SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
+// 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
+// 当 key 不是集合类型时，返回一个错误。
+func (r *Client) SAdd(key string, members ...interface{}) *redis.IntCmd {
+	return r.client.SAdd(r.k(key), members...)
+}
+
+// SCard 返回集合 key 的基数(集合中元素的数量)。
+func (r *Client) SCard(key string) *redis.IntCmd {
+	return r.client.SCard(r.k(key))
+}
+
+// SDiff 返回一个集合的全部成员，该集合是所有给定集合之间的差集。
+// 不存在的 key 被视为空集。
+func (r *Client) SDiff(keys ...string) *redis.StringSliceCmd {
+	return r.client.SDiff(r.ks(keys...)...)
+}
+
+// SDiffStore 这个命令的作用和 SDIFF 类似，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 集合已经存在，则将其覆盖。
+// destination 可以是 key 本身。
+func (r *Client) SDiffStore(destination string, keys ...string) *redis.IntCmd {
+	return r.client.SDiffStore(r.k(destination), r.ks(keys...)...)
+}
+
+// SInter 返回一个集合的全部成员，该集合是所有给定集合的交集。
+// 不存在的 key 被视为空集。
+// 当给定集合当中有一个空集时，结果也为空集(根据集合运算定律)。
+func (r *Client) SInter(keys ...string) *redis.StringSliceCmd {
+	return r.client.SInter(r.ks(keys...)...)
+}
+
+// SInterStore 这个命令类似于 SINTER 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 集合已经存在，则将其覆盖。
+// destination 可以是 key 本身。
+func (r *Client) SInterStore(destination string, keys ...string) *redis.IntCmd {
+	return r.client.SInterStore(r.k(destination), r.ks(keys...)...)
+}
+
+// SIsMember 判断 member 元素是否集合 key 的成员。
+func (r *Client) SIsMember(key string, member interface{}) *redis.BoolCmd {
+	return r.client.SIsMember(r.k(key), member)
+}
+
+// SMembers 返回集合 key 中的所有成员。
+// 不存在的 key 被视为空集合。
+func (r *Client) SMembers(key string) *redis.StringSliceCmd {
+	return r.client.SMembers(r.k(key))
+}
+
+// SMembersMap -> SMembers
+func (r *Client) SMembersMap(key string) *redis.StringStructMapCmd {
+	return r.client.SMembersMap(r.k(key))
+}
+
+// SMove 将 member 元素从 source 集合移动到 destination 集合。
+// SMOVE 是原子性操作。
+// 如果 source 集合不存在或不包含指定的 member 元素，则 SMOVE 命令不执行任何操作，仅返回 0 。否则， member 元素从 source 集合中被移除，并添加到 destination 集合中去。
+// 当 destination 集合已经包含 member 元素时， SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
+// 当 source 或 destination 不是集合类型时，返回一个错误。
+func (r *Client) SMove(source, destination string, member interface{}) *redis.BoolCmd {
+	return r.client.SMove(r.k(source), r.k(destination), member)
+}
+
+// SPop 移除并返回集合中的一个随机元素。
+// 如果只想获取一个随机元素，但不想该元素从集合中被移除的话，可以使用 SRANDMEMBER 命令。
+func (r *Client) SPop(key string) *redis.StringCmd {
+	return r.client.SPop(r.k(key))
+}
+
+// SPopN -> SPop
+func (r *Client) SPopN(key string, count int64) *redis.StringSliceCmd {
+	return r.client.SPopN(r.k(key), count)
+}
+
+// SRandMember 如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
+// 从 Redis 2.6 版本开始， SRANDMEMBER 命令接受可选的 count 参数：
+// 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。如果 count 大于等于集合基数，那么返回整个集合。
+// 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
+// 该操作和 SPOP 相似，但 SPOP 将随机元素从集合中移除并返回，而 SRANDMEMBER 则仅仅返回随机元素，而不对集合进行任何改动。
+func (r *Client) SRandMember(key string) *redis.StringCmd {
+	return r.client.SRandMember(r.k(key))
+}
+
+// SRandMemberN -> SRandMember
+func (r *Client) SRandMemberN(key string, count int64) *redis.StringSliceCmd {
+	return r.client.SRandMemberN(r.k(key), count)
+}
+
+// SRem 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
+// 当 key 不是集合类型，返回一个错误。
+func (r *Client) SRem(key string, members ...interface{}) *redis.IntCmd {
+	return r.client.SRem(r.k(key), members...)
+}
+
+// SUnion 返回一个集合的全部成员，该集合是所有给定集合的并集。
+// 不存在的 key 被视为空集。
+func (r *Client) SUnion(keys ...string) *redis.StringSliceCmd {
+	return r.client.SUnion(r.ks(keys...)...)
+}
+
+// SUnionStore 这个命令类似于 SUNION 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 已经存在，则将其覆盖。
+// destination 可以是 key 本身。
+func (r *Client) SUnionStore(destination string, keys ...string) *redis.IntCmd {
+	return r.client.SUnionStore(r.k(destination), r.ks(keys...)...)
+}
+
+
+
+// XAdd 将指定的流条目追加到指定key的流中。 如果key不存在，作为运行这个命令的副作用，将使用流的条目自动创建key。
+func (r *Client) XAdd(a *redis.XAddArgs) *redis.StringCmd {
+	return r.client.XAdd(a)
+}
+// XDel 从指定流中移除指定的条目，并返回成功删除的条目的数量，在传递的ID不存在的情况下， 返回的数量可能与传递的ID数量不同。
+func (r *Client) XDel(stream string, ids ...string) *redis.IntCmd {
+	return r.client.XDel(stream,ids...)
+}
+XLen(stream string) *redis.IntCmd
+XRange(stream, start, stop string) *redis.XMessageSliceCmd
+XRangeN(stream, start, stop string, count int64) *redis.XMessageSliceCmd
+XRevRange(stream string, start, stop string) *redis.XMessageSliceCmd
+XRevRangeN(stream string, start, stop string, count int64) *redis.XMessageSliceCmd
+XRead(a *redis.XReadArgs) *redis.XStreamSliceCmd
+XReadStreams(streams ...string) *redis.XStreamSliceCmd
+XGroupCreate(stream, group, start string) *redis.StatusCmd
+XGroupCreateMkStream(stream, group, start string) *redis.StatusCmd
+XGroupSetID(stream, group, start string) *redis.StatusCmd
+XGroupDestroy(stream, group string) *redis.IntCmd
+XGroupDelConsumer(stream, group, consumer string) *redis.IntCmd
+XReadGroup(a *redis.XReadGroupArgs) *redis.XStreamSliceCmd
+XAck(stream, group string, ids ...string) *redis.IntCmd
+XPending(stream, group string) *redis.XPendingCmd
+XPendingExt(a *redis.XPendingExtArgs) *redis.XPendingExtCmd
+XClaim(a *redis.XClaimArgs) *redis.XMessageSliceCmd
+XClaimJustID(a *redis.XClaimArgs) *redis.StringSliceCmd
+XTrim(key string, maxLen int64) *redis.IntCmd
+XTrimApprox(key string, maxLen int64) *redis.IntCmd
+XInfoGroups(key string) *redis.XInfoGroupsCmd
 
 // ErrNotImplemented not implemented error
 var ErrNotImplemented = errors.New("Not implemented")
