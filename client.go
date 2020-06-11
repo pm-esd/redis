@@ -514,54 +514,96 @@ func (r *Client) LRange(key string, start, stop int64) *redis.StringSliceCmd {
 func (r *Client) LRem(key string, count int64, value interface{}) *redis.IntCmd {
 	return r.client.LRem(r.k(key), count, value)
 }
+
+// LSet 将列表 key 下标为 index 的元素的值设置为 value 。
+// 当 index 参数超出范围，或对一个空列表( key 不存在)进行 LSET 时，返回一个错误。
+// 关于列表下标的更多信息，请参考 LINDEX 命令。
 func (r *Client) LSet(key string, index int64, value interface{}) *redis.StatusCmd {
 	return r.client.LSet(r.k(key), index, value)
 }
+
+// LTrim 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除。
+// 举个例子，执行命令 LTRIM list 0 2 ，表示只保留列表 list 的前三个元素，其余元素全部删除。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+// 当 key 不是列表类型时，返回一个错误。
 func (r *Client) LTrim(key string, start, stop int64) *redis.StatusCmd {
 	return r.client.LTrim(r.k(key), start, stop)
 }
+
+// RPop 移除并返回列表 key 的尾元素。
 func (r *Client) RPop(key string) *redis.StringCmd {
 	return r.client.RPop(r.k(key))
 }
+
+// RPopLPush 命令 RPOPLPUSH 在一个原子时间内，执行以下两个动作：
+// 将列表 source 中的最后一个元素(尾元素)弹出，并返回给客户端。
+// 将 source 弹出的元素插入到列表 destination ，作为 destination 列表的的头元素。
+// 举个例子，你有两个列表 source 和 destination ， source 列表有元素 a, b, c ， destination 列表有元素 x, y, z ，执行 RPOPLPUSH source destination 之后， source 列表包含元素 a, b ， destination 列表包含元素 c, x, y, z ，并且元素 c 会被返回给客户端。
+// 如果 source 不存在，值 nil 被返回，并且不执行其他动作。
+// 如果 source 和 destination 相同，则列表中的表尾元素被移动到表头，并返回该元素，可以把这种特殊情况视作列表的旋转(rotation)操作。
 func (r *Client) RPopLPush(source, destination string) *redis.StringCmd {
 	return r.client.RPopLPush(r.k(source), r.k(destination))
 }
+
+// RPush 将一个或多个值 value 插入到列表 key 的表尾(最右边)。
+// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表尾：比如对一个空列表 mylist 执行 RPUSH mylist a b c ，得出的结果列表为 a b c ，等同于执行命令 RPUSH mylist a 、 RPUSH mylist b 、 RPUSH mylist c 。
+// 如果 key 不存在，一个空列表会被创建并执行 RPUSH 操作。
+// 当 key 存在但不是列表类型时，返回一个错误。
 func (r *Client) RPush(key string, values ...interface{}) *redis.IntCmd {
 	return r.client.RPush(r.k(key), values...)
 }
+
+// RPushX 将值 value 插入到列表 key 的表尾，当且仅当 key 存在并且是一个列表。
+// 和 RPUSH 命令相反，当 key 不存在时， RPUSHX 命令什么也不做。
 func (r *Client) RPushX(key string, value interface{}) *redis.IntCmd {
 	return r.client.RPushX(r.k(key), value)
 }
 
-// -------------- Setter
-
-// Set function
+// Set 将字符串值 value 关联到 key 。
+// 如果 key 已经持有其他值， SET 就覆写旧值，无视类型。
+// 对于某个原本带有生存时间（TTL）的键来说， 当 SET 命令成功在这个键上执行时， 这个键原有的 TTL 将被清除。
 func (r *Client) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
 	return r.client.Set(r.k(key), value, expiration)
 }
+
+// Append 如果 key 已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾。
+// 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
 func (r *Client) Append(key, value string) *redis.IntCmd {
 	return r.client.Append(r.k(key), value)
 }
+
+// Del 删除给定的一个或多个 key 。
+// 不存在的 key 会被忽略。
 func (r *Client) Del(keys ...string) *redis.IntCmd {
 	return r.client.Del(r.ks(keys...)...)
 }
+
+// Unlink 这个命令非常类似于DEL：它删除指定的键。就像DEL键一样，如果它不存在，它将被忽略。但是，该命令在不同的线程中执行实际的内存回收，所以它不会阻塞，而DEL是。这是命令名称的来源：命令只是将键与键空间断开连接。实际删除将在以后异步发生。
 func (r *Client) Unlink(keys ...string) *redis.IntCmd {
 	return r.client.Unlink(r.ks(keys...)...)
 }
 
+// MSet 同时设置一个或多个 key-value 对。
 func (r *Client) MSet(values ...interface{}) *redis.StatusCmd {
 	return r.client.MSet(values...)
 }
 
+// MSetNX 同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在。
+// 即使只有一个给定 key 已存在， MSETNX 也会拒绝执行所有给定 key 的设置操作。
+// MSETNX 是原子性的，因此它可以用作设置多个不同 key 表示不同字段(field)的唯一性逻辑对象(unique logic object)，所有字段要么全被设置，要么全不被设置。
 func (r *Client) MSetNX(values ...interface{}) *redis.BoolCmd {
 	return r.client.MSetNX(values...)
 }
 
-// -------------- Settable
-
+// SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
+// 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
+// 当 key 不是集合类型时，返回一个错误。
 func (r *Client) SAdd(key string, members ...interface{}) *redis.IntCmd {
 	return r.client.SAdd(r.k(key), members...)
 }
+
+// SCard 返回集合 key 的基数(集合中元素的数量)。
 func (r *Client) SCard(key string) *redis.IntCmd {
 	return r.client.SCard(r.k(key))
 }
