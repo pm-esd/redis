@@ -10,10 +10,8 @@ import (
 type Commander interface {
 	Pipeline() redis.Pipeliner
 	Pipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
-
 	TxPipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
 	TxPipeline() redis.Pipeliner
-
 	Command() *redis.CommandsInfoCmd
 	ClientGetName() *redis.StringCmd
 	Echo(message interface{}) *redis.StringCmd
@@ -184,17 +182,6 @@ type Commander interface {
 	ZRevRank(key, member string) *redis.IntCmd
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
 	PFAdd(key string, els ...interface{}) *redis.IntCmd
 	PFCount(keys ...string) *redis.IntCmd
 	PFMerge(dest string, keys ...string) *redis.StatusCmd

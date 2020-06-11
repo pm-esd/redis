@@ -225,16 +225,6 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 	return res, err
 }
 
-// Publish 将信息 message 发送到指定的频道 channel 。
-func (r *Client) Publish(channel string, message interface{}) *redis.IntCmd {
-	return r.client.Publish(r.k(channel), message)
-}
-
-// Subscribe 订阅给定的一个或多个频道的信息。
-func (r *Client) Subscribe(channels ...string) *redis.PubSub {
-	return r.client.Subscribe(r.ks(channels...)...)
-}
-
 // Pipeline 获取管道
 func (r *Client) Pipeline() redis.Pipeliner {
 	return r.client.Pipeline()
@@ -1284,77 +1274,353 @@ func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
 	return r.client.ZUnionStore(r.k(dest), store)
 }
 
+// PFAdd将指定元素添加到HyperLogLog
+func (r *Client) PFAdd(key string, els ...interface{}) *redis.IntCmd {
+	return r.client.PFAdd(r.k(key), els...)
+}
 
+// PFCount 返回HyperlogLog观察到的集合的近似基数。
+func (r *Client) PFCount(keys ...string) *redis.IntCmd {
+	return r.client.PFCount(r.ks(keys...)...)
+}
 
-PFAdd(key string, els ...interface{}) *redis.IntCmd
-	PFCount(keys ...string) *redis.IntCmd
-	PFMerge(dest string, keys ...string) *redis.StatusCmd
-	BgRewriteAOF() *redis.StatusCmd
-	BgSave() *redis.StatusCmd
-	ClientKill(ipPort string) *redis.StatusCmd
-	ClientKillByFilter(keys ...string) *redis.IntCmd
-	ClientList() *redis.StringCmd
-	ClientPause(dur time.Duration) *redis.BoolCmd
-	ClientID() *redis.IntCmd
-	ConfigGet(parameter string) *redis.SliceCmd
-	ConfigResetStat() *redis.StatusCmd
-	ConfigSet(parameter, value string) *redis.StatusCmd
-	ConfigRewrite() *redis.StatusCmd
-	DBSize() *redis.IntCmd
-	FlushAll() *redis.StatusCmd
-	FlushAllAsync() *redis.StatusCmd
-	FlushDB() *redis.StatusCmd
-	FlushDBAsync() *redis.StatusCmd
-	Info(section ...string) *redis.StringCmd
-	LastSave() *redis.IntCmd
-	Save() *redis.StatusCmd
-	Shutdown() *redis.StatusCmd
-	ShutdownSave() *redis.StatusCmd
-	ShutdownNoSave() *redis.StatusCmd
-	SlaveOf(host, port string) *redis.StatusCmd
-	Time() *redis.TimeCmd
-	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
-	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
-	ScriptExists(hashes ...string) *redis.BoolSliceCmd
-	ScriptFlush() *redis.StatusCmd
-	ScriptKill() *redis.StatusCmd
-	ScriptLoad(script string) *redis.StringCmd
-	DebugObject(key string) *redis.StringCmd
-	Publish(channel string, message interface{}) *redis.IntCmd
-	PubSubChannels(pattern string) *redis.StringSliceCmd
-	PubSubNumSub(channels ...string) *redis.StringIntMapCmd
-	PubSubNumPat() *redis.IntCmd
-	ClusterSlots() *redis.ClusterSlotsCmd
-	ClusterNodes() *redis.StringCmd
-	ClusterMeet(host, port string) *redis.StatusCmd
-	ClusterForget(nodeID string) *redis.StatusCmd
-	ClusterReplicate(nodeID string) *redis.StatusCmd
-	ClusterResetSoft() *redis.StatusCmd
-	ClusterResetHard() *redis.StatusCmd
-	ClusterInfo() *redis.StringCmd
-	ClusterKeySlot(key string) *redis.IntCmd
-	ClusterGetKeysInSlot(slot int, count int) *redis.StringSliceCmd
-	ClusterCountFailureReports(nodeID string) *redis.IntCmd
-	ClusterCountKeysInSlot(slot int) *redis.IntCmd
-	ClusterDelSlots(slots ...int) *redis.StatusCmd
-	ClusterDelSlotsRange(min, max int) *redis.StatusCmd
-	ClusterSaveConfig() *redis.StatusCmd
-	ClusterSlaves(nodeID string) *redis.StringSliceCmd
-	ClusterFailover() *redis.StatusCmd
-	ClusterAddSlots(slots ...int) *redis.StatusCmd
-	ClusterAddSlotsRange(min, max int) *redis.StatusCmd
-	GeoAdd(key string, geoLocation ...*redis.GeoLocation) *redis.IntCmd
-	GeoPos(key string, members ...string) *redis.GeoPosCmd
-	GeoRadius(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
-	GeoRadiusStore(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.IntCmd
-	GeoRadiusByMember(key, member string, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
-	GeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *redis.IntCmd
-	GeoDist(key string, member1, member2, unit string) *redis.FloatCmd
-	GeoHash(key string, members ...string) *redis.StringSliceCmd
-	ReadOnly() *redis.StatusCmd
-	ReadWrite() *redis.StatusCmd
-	MemoryUsage(key string, samples ...int) *redis.IntCmd
-	Subscribe(channels ...string) *redis.PubSub
+// PFMerge N个不同的HyperLogLog合并为一个。
+func (r *Client) PFMerge(dest string, keys ...string) *redis.StatusCmd {
+	return r.client.PFMerge(r.k(dest), r.ks(keys...)...)
+}
+
+// BgRewriteAOF 异步重写附加文件
+func (r *Client) BgRewriteAOF() *redis.StatusCmd {
+	return r.client.BgRewriteAOF()
+}
+
+// BgSave 将数据集异步保存到磁盘
+func (r *Client) BgSave() *redis.StatusCmd {
+	return r.client.BgSave()
+}
+
+// ClientKill 杀掉客户端的连接
+func (r *Client) ClientKill(ipPort string) *redis.StatusCmd {
+	return r.client.ClientKill(ipPort)
+}
+
+// ClientKillByFilter is new style synx, while the ClientKill is old
+// CLIENT KILL <option> [value] ... <option> [value]
+func (r *Client) ClientKillByFilter(keys ...string) *redis.IntCmd {
+	return r.client.ClientKillByFilter(r.ks(keys...)...)
+}
+
+// ClientList 获取客户端连接列表
+func (r *Client) ClientList() *redis.StringCmd {
+	return r.client.ClientList()
+}
+
+// ClientPause 停止处理来自客户端的命令一段时间
+func (r *Client) ClientPause(dur time.Duration) *redis.BoolCmd {
+	return r.client.ClientPause(dur)
+}
+
+// ClientID Returns the client ID for the current connection
+func (r *Client) ClientID() *redis.IntCmd {
+	return r.client.ClientID()
+}
+
+// ConfigGet 获取指定配置参数的值
+func (r *Client) ConfigGet(parameter string) *redis.SliceCmd {
+	return r.client.ConfigGet(parameter)
+}
+
+// ConfigResetStat 重置 INFO 命令中的某些统计数据
+func (r *Client) ConfigResetStat() *redis.StatusCmd {
+	return r.client.ConfigResetStat()
+}
+
+// ConfigSet 修改 redis 配置参数，无需重启
+func (r *Client) ConfigSet(parameter, value string) *redis.StatusCmd {
+	return r.client.ConfigSet(parameter, value)
+}
+
+// ConfigRewrite 对启动 Redis 服务器时所指定的 redis.conf 配置文件进行改写
+func (r *Client) ConfigRewrite() *redis.StatusCmd {
+	return r.client.ConfigRewrite()
+}
+
+// DBSize 返回当前数据库的 key 的数量
+func (r *Client) DBSize() *redis.IntCmd {
+	return r.client.DBSize()
+}
+
+// FlushAll 删除所有数据库的所有key
+func (r *Client) FlushAll() *redis.StatusCmd {
+	return r.client.FlushAll()
+}
+
+// FlushAllAsync 异步删除所有数据库的所有key
+func (r *Client) FlushAllAsync() *redis.StatusCmd {
+	return r.client.FlushAllAsync()
+}
+
+// FlushDB 删除当前数据库的所有key
+func (r *Client) FlushDB() *redis.StatusCmd {
+	return r.client.FlushDB()
+}
+
+// FlushDBAsync 异步删除当前数据库的所有key
+func (r *Client) FlushDBAsync() *redis.StatusCmd {
+	return r.client.FlushDBAsync()
+}
+
+// Info 获取 Redis 服务器的各种信息和统计数值
+func (r *Client) Info(section ...string) *redis.StringCmd {
+	return r.client.Info(section...)
+}
+
+// LastSave 返回最近一次 Redis 成功将数据保存到磁盘上的时间，以 UNIX 时间戳格式表示
+func (r *Client) LastSave() *redis.IntCmd {
+	return r.client.LastSave()
+}
+
+//Save 异步保存数据到硬盘
+func (r *Client) Save() *redis.StatusCmd {
+	return r.client.Save()
+}
+
+// Shutdown 关闭服务器
+func (r *Client) Shutdown() *redis.StatusCmd {
+	return r.client.Shutdown()
+}
+
+// ShutdownSave 异步保存数据到硬盘，并关闭服务器
+func (r *Client) ShutdownSave() *redis.StatusCmd {
+	return r.client.ShutdownSave()
+}
+
+// ShutdownNoSave 不保存数据到硬盘，并关闭服务器
+func (r *Client) ShutdownNoSave() *redis.StatusCmd {
+	return r.client.ShutdownNoSave()
+}
+
+// SlaveOf 将当前服务器转变为指定服务器的从属服务器(slave server)
+func (r *Client) SlaveOf(host, port string) *redis.StatusCmd {
+	return r.client.SlaveOf(host, port)
+}
+
+// Time 返回当前服务器时间
+func (r *Client) Time() *redis.TimeCmd {
+	return r.client.Time()
+}
+
+//Eval 执行 Lua 脚本。
+func (r *Client) Eval(script string, keys []string, args ...interface{}) *redis.Cmd {
+	return r.client.Eval(script, r.ks(keys...), args...)
+}
+
+//EvalSha 执行 Lua 脚本。
+func (r *Client) EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd {
+	return r.client.EvalSha(sha1, r.ks(keys...), args...)
+}
+
+// ScriptExists 查看指定的脚本是否已经被保存在缓存当中。
+func (r *Client) ScriptExists(hashes ...string) *redis.BoolSliceCmd {
+	return r.client.ScriptExists(hashes...)
+}
+
+// ScriptFlush 从脚本缓存中移除所有脚本。
+func (r *Client) ScriptFlush() *redis.StatusCmd {
+	return r.client.ScriptFlush()
+}
+
+// ScriptKill 杀死当前正在运行的 Lua 脚本。
+func (r *Client) ScriptKill() *redis.StatusCmd {
+	return r.client.ScriptKill()
+
+}
+
+// ScriptLoad 将脚本 script 添加到脚本缓存中，但并不立即执行这个脚本。
+func (r *Client) ScriptLoad(script string) *redis.StringCmd {
+	return r.client.ScriptLoad(script)
+}
+
+// DebugObject 获取 key 的调试信息
+func (r *Client) DebugObject(key string) *redis.StringCmd {
+	return r.client.DebugObject(r.k(key))
+}
+
+//Publish 将信息发送到指定的频道。
+func (r *Client) Publish(channel string, message interface{}) *redis.IntCmd {
+	return r.client.Publish(r.k(channel), message)
+}
+
+//PubSubChannels 订阅一个或多个符合给定模式的频道。
+func (r *Client) PubSubChannels(pattern string) *redis.StringSliceCmd {
+	return r.client.PubSubChannels(r.k(pattern))
+}
+
+// PubSubNumSub 查看订阅与发布系统状态。
+func (r *Client) PubSubNumSub(channels ...string) *redis.StringIntMapCmd {
+	return r.client.PubSubNumSub(r.ks(channels...)...)
+}
+
+// PubSubNumPat 用于获取redis订阅或者发布信息的状态
+func (r *Client) PubSubNumPat() *redis.IntCmd {
+	return r.client.PubSubNumPat()
+}
+
+//ClusterSlots 获取集群节点的映射数组
+func (r *Client) ClusterSlots() *redis.ClusterSlotsCmd {
+	return r.client.ClusterSlots()
+}
+
+// ClusterNodes Get Cluster config for the node
+func (r *Client) ClusterNodes() *redis.StringCmd {
+	return r.client.ClusterNodes()
+}
+
+// ClusterMeet Force a node cluster to handshake with another node
+func (r *Client) ClusterMeet(host, port string) *redis.StatusCmd {
+	return r.client.ClusterMeet(host, port)
+}
+
+// ClusterForget Remove a node from the nodes table
+func (r *Client) ClusterForget(nodeID string) *redis.StatusCmd {
+	return r.client.ClusterForget(nodeID)
+}
+
+// ClusterReplicate Reconfigure a node as a replica of the specified master node
+func (r *Client) ClusterReplicate(nodeID string) *redis.StatusCmd {
+	return r.client.ClusterReplicate(nodeID)
+
+}
+
+// ClusterResetSoft Reset a Redis Cluster node
+func (r *Client) ClusterResetSoft() *redis.StatusCmd {
+	return r.client.ClusterResetSoft()
+}
+
+// ClusterResetHard Reset a Redis Cluster node
+func (r *Client) ClusterResetHard() *redis.StatusCmd {
+	return r.client.ClusterResetHard()
+}
+
+// ClusterInfo Provides info about Redis Cluster node state
+func (r *Client) ClusterInfo() *redis.StringCmd {
+	return r.client.ClusterInfo()
+}
+
+// ClusterKeySlot Returns the hash slot of the specified key
+func (r *Client) ClusterKeySlot(key string) *redis.IntCmd {
+	return r.client.ClusterKeySlot(r.k(key))
+}
+
+// ClusterGetKeysInSlot Return local key names in the specified hash slot
+func (r *Client) ClusterGetKeysInSlot(slot int, count int) *redis.StringSliceCmd {
+	return r.client.ClusterGetKeysInSlot(slot, count)
+}
+
+// ClusterCountFailureReports Return the number of failure reports active for a given node
+func (r *Client) ClusterCountFailureReports(nodeID string) *redis.IntCmd {
+	return r.client.ClusterCountFailureReports(nodeID)
+}
+
+// ClusterCountKeysInSlot Return the number of local keys in the specified hash slot
+func (r *Client) ClusterCountKeysInSlot(slot int) *redis.IntCmd {
+	return r.client.ClusterCountKeysInSlot(slot)
+}
+
+// ClusterDelSlots Set hash slots as unbound in receiving node
+func (r *Client) ClusterDelSlots(slots ...int) *redis.StatusCmd {
+	return r.client.ClusterDelSlots(slots...)
+}
+
+// ClusterDelSlotsRange ->  ClusterDelSlots
+func (r *Client) ClusterDelSlotsRange(min, max int) *redis.StatusCmd {
+	return r.client.ClusterDelSlotsRange(min, max)
+}
+
+// ClusterSaveConfig Forces the node to save cluster state on disk
+func (r *Client) ClusterSaveConfig() *redis.StatusCmd {
+	return r.client.ClusterSaveConfig()
+}
+
+// ClusterSlaves List replica nodes of the specified master node
+func (r *Client) ClusterSlaves(nodeID string) *redis.StringSliceCmd {
+	return r.client.ClusterSlaves(nodeID)
+}
+
+// ClusterFailover Forces a replica to perform a manual failover of its master.
+func (r *Client) ClusterFailover() *redis.StatusCmd {
+	return r.client.ClusterFailover()
+}
+
+// ClusterAddSlots Assign new hash slots to receiving node
+func (r *Client) ClusterAddSlots(slots ...int) *redis.StatusCmd {
+	return r.client.ClusterAddSlots(slots...)
+}
+
+// ClusterAddSlotsRange -> ClusterAddSlots
+func (r *Client) ClusterAddSlotsRange(min, max int) *redis.StatusCmd {
+	return r.client.ClusterAddSlotsRange(min, max)
+}
+
+//GeoAdd 将指定的地理空间位置（纬度、经度、名称）添加到指定的key中
+func (r *Client) GeoAdd(key string, geoLocation ...*redis.GeoLocation) *redis.IntCmd {
+	return r.client.GeoAdd(r.k(key), geoLocation...)
+}
+
+// GeoPos 从key里返回所有给定位置元素的位置（经度和纬度）
+func (r *Client) GeoPos(key string, members ...string) *redis.GeoPosCmd {
+	return r.client.GeoPos(r.k(key), members...)
+}
+
+// GeoRadius 以给定的经纬度为中心， 找出某一半径内的元素
+func (r *Client) GeoRadius(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd {
+	return r.client.GeoRadius(r.k(key), longitude, latitude, query)
+}
+
+// GeoRadiusStore -> GeoRadius
+func (r *Client) GeoRadiusStore(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.IntCmd {
+	return r.client.GeoRadiusStore(r.k(key), longitude, latitude, query)
+}
+
+// GeoRadiusByMember -> GeoRadius
+func (r *Client) GeoRadiusByMember(key, member string, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd {
+	return r.client.GeoRadiusByMember(r.k(key), member, query)
+}
+
+//GeoRadiusByMemberStore 找出位于指定范围内的元素，中心点是由给定的位置元素决定
+func (r *Client) GeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *redis.IntCmd {
+	return r.client.GeoRadiusByMemberStore(r.k(key), member, query)
+}
+
+// GeoDist 返回两个给定位置之间的距离
+func (r *Client) GeoDist(key string, member1, member2, unit string) *redis.FloatCmd {
+	return r.client.GeoDist(r.k(key), member1, member2, unit)
+}
+
+// GeoHash 返回一个或多个位置元素的 Geohash 表示
+func (r *Client) GeoHash(key string, members ...string) *redis.StringSliceCmd {
+	return r.client.GeoHash(r.k(key), members...)
+}
+
+// ReadOnly Enables read queries for a connection to a cluster replica node
+func (r *Client) ReadOnly() *redis.StatusCmd {
+	return r.client.ReadOnly()
+}
+
+// ReadWrite Disables read queries for a connection to a cluster replica node
+func (r *Client) ReadWrite() *redis.StatusCmd {
+	return r.client.ReadWrite()
+}
+
+// MemoryUsage Estimate the memory usage of a key
+func (r *Client) MemoryUsage(key string, samples ...int) *redis.IntCmd {
+	return r.client.MemoryUsage(r.k(key), samples...)
+}
+
+// Subscribe 订阅给定的一个或多个频道的信息。
+func (r *Client) Subscribe(channels ...string) *redis.PubSub {
+	return r.client.Subscribe(r.ks(channels...)...)
+}
 
 // ErrNotImplemented not implemented error
 var ErrNotImplemented = errors.New("Not implemented")
