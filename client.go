@@ -607,148 +607,280 @@ func (r *Client) SAdd(key string, members ...interface{}) *redis.IntCmd {
 func (r *Client) SCard(key string) *redis.IntCmd {
 	return r.client.SCard(r.k(key))
 }
+
+// SDiff 返回一个集合的全部成员，该集合是所有给定集合之间的差集。
+// 不存在的 key 被视为空集。
 func (r *Client) SDiff(keys ...string) *redis.StringSliceCmd {
 	return r.client.SDiff(r.ks(keys...)...)
 }
+
+// SDiffStore 这个命令的作用和 SDIFF 类似，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 集合已经存在，则将其覆盖。
+// destination 可以是 key 本身。
 func (r *Client) SDiffStore(destination string, keys ...string) *redis.IntCmd {
 	return r.client.SDiffStore(r.k(destination), r.ks(keys...)...)
 }
+
+// SInter 返回一个集合的全部成员，该集合是所有给定集合的交集。
+// 不存在的 key 被视为空集。
+// 当给定集合当中有一个空集时，结果也为空集(根据集合运算定律)。
 func (r *Client) SInter(keys ...string) *redis.StringSliceCmd {
 	return r.client.SInter(r.ks(keys...)...)
 }
+
+// SInterStore 这个命令类似于 SINTER 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 集合已经存在，则将其覆盖。
+// destination 可以是 key 本身。
 func (r *Client) SInterStore(destination string, keys ...string) *redis.IntCmd {
 	return r.client.SInterStore(r.k(destination), r.ks(keys...)...)
 }
+
+// SIsMember 判断 member 元素是否集合 key 的成员。
 func (r *Client) SIsMember(key string, member interface{}) *redis.BoolCmd {
 	return r.client.SIsMember(r.k(key), member)
 }
+
+// SMembers 返回集合 key 中的所有成员。
+// 不存在的 key 被视为空集合。
 func (r *Client) SMembers(key string) *redis.StringSliceCmd {
 	return r.client.SMembers(r.k(key))
 }
+
+// SMove 将 member 元素从 source 集合移动到 destination 集合。
+// SMOVE 是原子性操作。
+// 如果 source 集合不存在或不包含指定的 member 元素，则 SMOVE 命令不执行任何操作，仅返回 0 。否则， member 元素从 source 集合中被移除，并添加到 destination 集合中去。
+// 当 destination 集合已经包含 member 元素时， SMOVE 命令只是简单地将 source 集合中的 member 元素删除。
+// 当 source 或 destination 不是集合类型时，返回一个错误。
 func (r *Client) SMove(source, destination string, member interface{}) *redis.BoolCmd {
 	return r.client.SMove(r.k(source), r.k(destination), member)
 }
+
+// SPop 移除并返回集合中的一个随机元素。
+// 如果只想获取一个随机元素，但不想该元素从集合中被移除的话，可以使用 SRANDMEMBER 命令。
 func (r *Client) SPop(key string) *redis.StringCmd {
 	return r.client.SPop(r.k(key))
 }
+
+// SPopN -> SPop
 func (r *Client) SPopN(key string, count int64) *redis.StringSliceCmd {
 	return r.client.SPopN(r.k(key), count)
 }
+
+// SRandMember 如果命令执行时，只提供了 key 参数，那么返回集合中的一个随机元素。
+// 从 Redis 2.6 版本开始， SRANDMEMBER 命令接受可选的 count 参数：
+// 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。如果 count 大于等于集合基数，那么返回整个集合。
+// 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
+// 该操作和 SPOP 相似，但 SPOP 将随机元素从集合中移除并返回，而 SRANDMEMBER 则仅仅返回随机元素，而不对集合进行任何改动。
 func (r *Client) SRandMember(key string) *redis.StringCmd {
 	return r.client.SRandMember(r.k(key))
 }
+
+// SRandMemberN -> SRandMember
 func (r *Client) SRandMemberN(key string, count int64) *redis.StringSliceCmd {
 	return r.client.SRandMemberN(r.k(key), count)
 }
+
+// SRem 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
+// 当 key 不是集合类型，返回一个错误。
 func (r *Client) SRem(key string, members ...interface{}) *redis.IntCmd {
 	return r.client.SRem(r.k(key), members...)
 }
+
+// SUnion 返回一个集合的全部成员，该集合是所有给定集合的并集。
+// 不存在的 key 被视为空集。
 func (r *Client) SUnion(keys ...string) *redis.StringSliceCmd {
 	return r.client.SUnion(r.ks(keys...)...)
 }
+
+// SUnionStore 这个命令类似于 SUNION 命令，但它将结果保存到 destination 集合，而不是简单地返回结果集。
+// 如果 destination 已经存在，则将其覆盖。
+// destination 可以是 key 本身。
 func (r *Client) SUnionStore(destination string, keys ...string) *redis.IntCmd {
 	return r.client.SUnionStore(r.k(destination), r.ks(keys...)...)
 }
 
-// -------------- SortedSettable
-
+// ZAdd 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
+// 如果某个 member 已经是有序集的成员，那么更新这个 member 的 score 值，并通过重新插入这个 member 元素，来保证该 member 在正确的位置上。
+// score 值可以是整数值或双精度浮点数。
+// 如果 key 不存在，则创建一个空的有序集并执行 ZADD 操作。
+// 当 key 存在但不是有序集类型时，返回一个错误。
 func (r *Client) ZAdd(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAdd(r.k(key), members...)
 }
+
+// ZAddNX -> ZAdd
 func (r *Client) ZAddNX(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddNX(r.k(key), members...)
 }
+
+// ZAddXX -> ZAdd
 func (r *Client) ZAddXX(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddXX(r.k(key), members...)
 }
+
+// ZAddCh -> ZAdd
 func (r *Client) ZAddCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddCh(r.k(key), members...)
 }
+
+// ZAddNXCh -> ZAdd
 func (r *Client) ZAddNXCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddNXCh(r.k(key), members...)
 }
+
+// ZAddXXCh -> ZAdd
 func (r *Client) ZAddXXCh(key string, members ...*redis.Z) *redis.IntCmd {
 	return r.client.ZAddXXCh(r.k(key), members...)
 }
+
+// ZIncr Redis `ZADD key INCR score member` command.
 func (r *Client) ZIncr(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncr(r.k(key), member)
 }
+
+// ZIncrNX Redis `ZADD key NX INCR score member` command.
 func (r *Client) ZIncrNX(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncrNX(r.k(key), member)
 }
+
+// ZIncrXX Redis `ZADD key XX INCR score member` command.
 func (r *Client) ZIncrXX(key string, member *redis.Z) *redis.FloatCmd {
 	return r.client.ZIncrXX(r.k(key), member)
 }
+
+// ZCard 返回有序集 key 的基数。
 func (r *Client) ZCard(key string) *redis.IntCmd {
 	return r.client.ZCard(r.k(key))
 }
+
+// ZCount 返回有序集 key 中， score 值在 min 和 max 之间(默认包括 score 值等于 min 或 max )的成员的数量。
+// 关于参数 min 和 max 的详细使用方法，请参考 ZRANGEBYSCORE 命令。
 func (r *Client) ZCount(key, min, max string) *redis.IntCmd {
 	return r.client.ZCount(r.k(key), min, max)
 }
+
+// ZIncrBy 为有序集 key 的成员 member 的 score 值加上增量 increment 。
+// 可以通过传递一个负数值 increment ，让 score 减去相应的值，比如 ZINCRBY key -5 member ，就是让 member 的 score 值减去 5 。
+// 当 key 不存在，或 member 不是 key 的成员时， ZINCRBY key increment member 等同于 ZADD key increment member 。
+// 当 key 不是有序集类型时，返回一个错误。
+// score 值可以是整数值或双精度浮点数。
 func (r *Client) ZIncrBy(key string, increment float64, member string) *redis.FloatCmd {
 	return r.client.ZIncrBy(r.k(key), increment, member)
 }
 
+// ZInterStore 计算给定的一个或多个有序集的交集，其中给定 key 的数量必须以 numkeys 参数指定，并将该交集(结果集)储存到 destination 。
+// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之和.
+// 关于 WEIGHTS 和 AGGREGATE 选项的描述，参见 ZUNIONSTORE 命令。
 func (r *Client) ZInterStore(key string, store *redis.ZStore) *redis.IntCmd {
 	return r.client.ZInterStore(r.k(key), store)
 }
+
+// ZRange 返回有序集 key 中，指定区间内的成员。
+// 其中成员的位置按 score 值递增(从小到大)来排序。
 func (r *Client) ZRange(key string, start, stop int64) *redis.StringSliceCmd {
 	return r.client.ZRange(r.k(key), start, stop)
 }
+
+// ZRangeWithScores -> ZRange
 func (r *Client) ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
 	return r.client.ZRangeWithScores(r.k(key), start, stop)
 }
+
+// ZRangeByScore 返回有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。有序集成员按 score 值递增(从小到大)次序排列。
 func (r *Client) ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRangeByScore(r.k(key), opt)
 }
+
+// ZRangeByLex -> ZRangeByScore
 func (r *Client) ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRangeByLex(r.k(key), opt)
 }
+
+// ZRangeByScoreWithScores -> ZRangeByScore
 func (r *Client) ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
 	return r.client.ZRangeByScoreWithScores(r.k(key), opt)
 }
+
+// ZRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
+// 排名以 0 为底，也就是说， score 值最小的成员排名为 0 。
+// 使用 ZREVRANK 命令可以获得成员按 score 值递减(从大到小)排列的排名。
 func (r *Client) ZRank(key, member string) *redis.IntCmd {
 	return r.client.ZRank(r.k(key), member)
 }
+
+// ZRem 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
+// 当 key 存在但不是有序集类型时，返回一个错误。
 func (r *Client) ZRem(key string, members ...interface{}) *redis.IntCmd {
 	return r.client.ZRem(r.k(key), members...)
 }
+
+// ZRemRangeByRank 移除有序集 key 中，指定排名(rank)区间内的所有成员。
+// 区间分别以下标参数 start 和 stop 指出，包含 start 和 stop 在内。
+// 下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。
+// 你也可以使用负数下标，以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推
 func (r *Client) ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd {
 	return r.client.ZRemRangeByRank(r.k(key), start, stop)
 }
+
+// ZRemRangeByScore 移除有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。
+// 自版本2.1.6开始， score 值等于 min 或 max 的成员也可以不包括在内，详情请参见 ZRANGEBYSCORE 命令。
 func (r *Client) ZRemRangeByScore(key, min, max string) *redis.IntCmd {
 	return r.client.ZRemRangeByScore(r.k(key), min, max)
 }
+
+//ZRemRangeByLex -> ZRemRangeByScore
 func (r *Client) ZRemRangeByLex(key, min, max string) *redis.IntCmd {
 	return r.client.ZRemRangeByLex(r.k(key), min, max)
 }
+
+// ZRevRange 返回有序集 key 中，指定区间内的成员。
+// 其中成员的位置按 score 值递减(从大到小)来排列。
+// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order)排列。
+// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE 命令一样。
 func (r *Client) ZRevRange(key string, start, stop int64) *redis.StringSliceCmd {
 	return r.client.ZRevRange(r.k(key), start, stop)
 }
+
+//ZRevRangeWithScores -> ZRevRange
 func (r *Client) ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
 	return r.client.ZRevRangeWithScores(r.k(key), start, stop)
 }
+
+// ZRevRangeByScore 返回有序集 key 中， score 值介于 max 和 min 之间(默认包括等于 max 或 min )的所有的成员。有序集成员按 score 值递减(从大到小)的次序排列。
+// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order )排列。
+// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGEBYSCORE 命令的其他方面和 ZRANGEBYSCORE 命令一样。
 func (r *Client) ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRevRangeByScore(r.k(key), opt)
 }
+
+// ZRevRangeByLex -> ZRevRangeByScore
 func (r *Client) ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
 	return r.client.ZRevRangeByLex(r.k(key), opt)
 }
+
+// ZRevRangeByScoreWithScores -> ZRevRangeByScore
 func (r *Client) ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
 	return r.client.ZRevRangeByScoreWithScores(r.k(key), opt)
 }
+
+// ZRevRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递减(从大到小)排序。
+// 排名以 0 为底，也就是说， score 值最大的成员排名为 0 。
+// 使用 ZRANK 命令可以获得成员按 score 值递增(从小到大)排列的排名。
 func (r *Client) ZRevRank(key, member string) *redis.IntCmd {
 	return r.client.ZRevRank(r.k(key), member)
 }
+
+// ZScore 返回有序集 key 中，成员 member 的 score 值。
+// 如果 member 元素不是有序集 key 的成员，或 key 不存在，返回 nil 。
 func (r *Client) ZScore(key, member string) *redis.FloatCmd {
 	return r.client.ZScore(r.k(key), member)
 }
 
+// ZUnionStore 计算给定的一个或多个有序集的并集，其中给定 key 的数量必须以 numkeys 参数指定，并将该并集(结果集)储存到 destination 。
+// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之 和 。
 func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
 	return r.client.ZUnionStore(r.k(dest), store)
 }
-
-// -------------- BlockedSettable
 
 func (r *Client) BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
 	return r.client.BLPop(timeout, r.ks(keys...)...)
