@@ -156,11 +156,6 @@ func (r *Client) GetClient() Commander {
 	return r.client
 }
 
-// PExpire 毫秒为单位设置 key 的生存时间
-func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
-	return r.client.PExpire(r.k(key), expiration)
-}
-
 // MGetByPipeline gets multiple values from keys,Pipeline is used when
 // redis is a cluster,This means higher IO performance
 // params: keys ...string
@@ -230,191 +225,6 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 	return res, err
 }
 
-
-
-// ZAdd 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
-// 如果某个 member 已经是有序集的成员，那么更新这个 member 的 score 值，并通过重新插入这个 member 元素，来保证该 member 在正确的位置上。
-// score 值可以是整数值或双精度浮点数。
-// 如果 key 不存在，则创建一个空的有序集并执行 ZADD 操作。
-// 当 key 存在但不是有序集类型时，返回一个错误。
-func (r *Client) ZAdd(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAdd(r.k(key), members...)
-}
-
-// ZAddNX -> ZAdd
-func (r *Client) ZAddNX(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAddNX(r.k(key), members...)
-}
-
-// ZAddXX -> ZAdd
-func (r *Client) ZAddXX(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAddXX(r.k(key), members...)
-}
-
-// ZAddCh -> ZAdd
-func (r *Client) ZAddCh(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAddCh(r.k(key), members...)
-}
-
-// ZAddNXCh -> ZAdd
-func (r *Client) ZAddNXCh(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAddNXCh(r.k(key), members...)
-}
-
-// ZAddXXCh -> ZAdd
-func (r *Client) ZAddXXCh(key string, members ...*redis.Z) *redis.IntCmd {
-	return r.client.ZAddXXCh(r.k(key), members...)
-}
-
-// ZIncr Redis `ZADD key INCR score member` command.
-func (r *Client) ZIncr(key string, member *redis.Z) *redis.FloatCmd {
-	return r.client.ZIncr(r.k(key), member)
-}
-
-// ZIncrNX Redis `ZADD key NX INCR score member` command.
-func (r *Client) ZIncrNX(key string, member *redis.Z) *redis.FloatCmd {
-	return r.client.ZIncrNX(r.k(key), member)
-}
-
-// ZIncrXX Redis `ZADD key XX INCR score member` command.
-func (r *Client) ZIncrXX(key string, member *redis.Z) *redis.FloatCmd {
-	return r.client.ZIncrXX(r.k(key), member)
-}
-
-// ZCard 返回有序集 key 的基数。
-func (r *Client) ZCard(key string) *redis.IntCmd {
-	return r.client.ZCard(r.k(key))
-}
-
-// ZCount 返回有序集 key 中， score 值在 min 和 max 之间(默认包括 score 值等于 min 或 max )的成员的数量。
-// 关于参数 min 和 max 的详细使用方法，请参考 ZRANGEBYSCORE 命令。
-func (r *Client) ZCount(key, min, max string) *redis.IntCmd {
-	return r.client.ZCount(r.k(key), min, max)
-}
-
-// ZIncrBy 为有序集 key 的成员 member 的 score 值加上增量 increment 。
-// 可以通过传递一个负数值 increment ，让 score 减去相应的值，比如 ZINCRBY key -5 member ，就是让 member 的 score 值减去 5 。
-// 当 key 不存在，或 member 不是 key 的成员时， ZINCRBY key increment member 等同于 ZADD key increment member 。
-// 当 key 不是有序集类型时，返回一个错误。
-// score 值可以是整数值或双精度浮点数。
-func (r *Client) ZIncrBy(key string, increment float64, member string) *redis.FloatCmd {
-	return r.client.ZIncrBy(r.k(key), increment, member)
-}
-
-// ZInterStore 计算给定的一个或多个有序集的交集，其中给定 key 的数量必须以 numkeys 参数指定，并将该交集(结果集)储存到 destination 。
-// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之和.
-// 关于 WEIGHTS 和 AGGREGATE 选项的描述，参见 ZUNIONSTORE 命令。
-func (r *Client) ZInterStore(key string, store *redis.ZStore) *redis.IntCmd {
-	return r.client.ZInterStore(r.k(key), store)
-}
-
-// ZRange 返回有序集 key 中，指定区间内的成员。
-// 其中成员的位置按 score 值递增(从小到大)来排序。
-func (r *Client) ZRange(key string, start, stop int64) *redis.StringSliceCmd {
-	return r.client.ZRange(r.k(key), start, stop)
-}
-
-// ZRangeWithScores -> ZRange
-func (r *Client) ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
-	return r.client.ZRangeWithScores(r.k(key), start, stop)
-}
-
-// ZRangeByScore 返回有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。有序集成员按 score 值递增(从小到大)次序排列。
-func (r *Client) ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
-	return r.client.ZRangeByScore(r.k(key), opt)
-}
-
-// ZRangeByLex -> ZRangeByScore
-func (r *Client) ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
-	return r.client.ZRangeByLex(r.k(key), opt)
-}
-
-// ZRangeByScoreWithScores -> ZRangeByScore
-func (r *Client) ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
-	return r.client.ZRangeByScoreWithScores(r.k(key), opt)
-}
-
-// ZRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
-// 排名以 0 为底，也就是说， score 值最小的成员排名为 0 。
-// 使用 ZREVRANK 命令可以获得成员按 score 值递减(从大到小)排列的排名。
-func (r *Client) ZRank(key, member string) *redis.IntCmd {
-	return r.client.ZRank(r.k(key), member)
-}
-
-// ZRem 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
-// 当 key 存在但不是有序集类型时，返回一个错误。
-func (r *Client) ZRem(key string, members ...interface{}) *redis.IntCmd {
-	return r.client.ZRem(r.k(key), members...)
-}
-
-// ZRemRangeByRank 移除有序集 key 中，指定排名(rank)区间内的所有成员。
-// 区间分别以下标参数 start 和 stop 指出，包含 start 和 stop 在内。
-// 下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。
-// 你也可以使用负数下标，以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推
-func (r *Client) ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd {
-	return r.client.ZRemRangeByRank(r.k(key), start, stop)
-}
-
-// ZRemRangeByScore 移除有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。
-// 自版本2.1.6开始， score 值等于 min 或 max 的成员也可以不包括在内，详情请参见 ZRANGEBYSCORE 命令。
-func (r *Client) ZRemRangeByScore(key, min, max string) *redis.IntCmd {
-	return r.client.ZRemRangeByScore(r.k(key), min, max)
-}
-
-//ZRemRangeByLex -> ZRemRangeByScore
-func (r *Client) ZRemRangeByLex(key, min, max string) *redis.IntCmd {
-	return r.client.ZRemRangeByLex(r.k(key), min, max)
-}
-
-// ZRevRange 返回有序集 key 中，指定区间内的成员。
-// 其中成员的位置按 score 值递减(从大到小)来排列。
-// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order)排列。
-// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE 命令一样。
-func (r *Client) ZRevRange(key string, start, stop int64) *redis.StringSliceCmd {
-	return r.client.ZRevRange(r.k(key), start, stop)
-}
-
-//ZRevRangeWithScores -> ZRevRange
-func (r *Client) ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
-	return r.client.ZRevRangeWithScores(r.k(key), start, stop)
-}
-
-// ZRevRangeByScore 返回有序集 key 中， score 值介于 max 和 min 之间(默认包括等于 max 或 min )的所有的成员。有序集成员按 score 值递减(从大到小)的次序排列。
-// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order )排列。
-// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGEBYSCORE 命令的其他方面和 ZRANGEBYSCORE 命令一样。
-func (r *Client) ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
-	return r.client.ZRevRangeByScore(r.k(key), opt)
-}
-
-// ZRevRangeByLex -> ZRevRangeByScore
-func (r *Client) ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
-	return r.client.ZRevRangeByLex(r.k(key), opt)
-}
-
-// ZRevRangeByScoreWithScores -> ZRevRangeByScore
-func (r *Client) ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
-	return r.client.ZRevRangeByScoreWithScores(r.k(key), opt)
-}
-
-// ZRevRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递减(从大到小)排序。
-// 排名以 0 为底，也就是说， score 值最大的成员排名为 0 。
-// 使用 ZRANK 命令可以获得成员按 score 值递增(从小到大)排列的排名。
-func (r *Client) ZRevRank(key, member string) *redis.IntCmd {
-	return r.client.ZRevRank(r.k(key), member)
-}
-
-// ZScore 返回有序集 key 中，成员 member 的 score 值。
-// 如果 member 元素不是有序集 key 的成员，或 key 不存在，返回 nil 。
-func (r *Client) ZScore(key, member string) *redis.FloatCmd {
-	return r.client.ZScore(r.k(key), member)
-}
-
-// ZUnionStore 计算给定的一个或多个有序集的并集，其中给定 key 的数量必须以 numkeys 参数指定，并将该并集(结果集)储存到 destination 。
-// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之 和 。
-func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
-	return r.client.ZUnionStore(r.k(dest), store)
-}
-
 // Publish 将信息 message 发送到指定的频道 channel 。
 func (r *Client) Publish(channel string, message interface{}) *redis.IntCmd {
 	return r.client.Publish(r.k(channel), message)
@@ -424,15 +234,6 @@ func (r *Client) Publish(channel string, message interface{}) *redis.IntCmd {
 func (r *Client) Subscribe(channels ...string) *redis.PubSub {
 	return r.client.Subscribe(r.ks(channels...)...)
 }
-
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
-// ================================================================================================================================================
 
 // Pipeline 获取管道
 func (r *Client) Pipeline() redis.Pipeliner {
@@ -554,6 +355,11 @@ func (r *Client) ObjectIdleTime(key string) *redis.DurationCmd {
 // 如果 key 不存在或 key 没有设置生存时间，返回 0 。
 func (r *Client) Persist(key string) *redis.BoolCmd {
 	return r.client.Persist(r.k(key))
+}
+
+// PExpire 毫秒为单位设置 key 的生存时间
+func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
+	return r.client.PExpire(r.k(key), expiration)
 }
 
 // PExpireAt 这个命令和 expireat 命令类似，但它以毫秒为单位设置 key 的过期 unix 时间戳，而不是像 expireat 那样，以秒为单位。
@@ -1046,8 +852,6 @@ func (r *Client) RPop(key string) *redis.StringCmd {
 	return r.client.RPop(r.k(key))
 }
 
-
-
 // SAdd 将一个或多个 member 元素加入到集合 key 当中，已经存在于集合的 member 元素将被忽略。
 // 假如 key 不存在，则创建一个只包含 member 元素作成员的集合。
 // 当 key 不是集合类型时，返回一个错误。
@@ -1156,37 +960,401 @@ func (r *Client) SUnionStore(destination string, keys ...string) *redis.IntCmd {
 	return r.client.SUnionStore(r.k(destination), r.ks(keys...)...)
 }
 
-
-
 // XAdd 将指定的流条目追加到指定key的流中。 如果key不存在，作为运行这个命令的副作用，将使用流的条目自动创建key。
 func (r *Client) XAdd(a *redis.XAddArgs) *redis.StringCmd {
 	return r.client.XAdd(a)
 }
+
 // XDel 从指定流中移除指定的条目，并返回成功删除的条目的数量，在传递的ID不存在的情况下， 返回的数量可能与传递的ID数量不同。
 func (r *Client) XDel(stream string, ids ...string) *redis.IntCmd {
-	return r.client.XDel(stream,ids...)
+	return r.client.XDel(stream, ids...)
 }
-XLen(stream string) *redis.IntCmd
-XRange(stream, start, stop string) *redis.XMessageSliceCmd
-XRangeN(stream, start, stop string, count int64) *redis.XMessageSliceCmd
-XRevRange(stream string, start, stop string) *redis.XMessageSliceCmd
-XRevRangeN(stream string, start, stop string, count int64) *redis.XMessageSliceCmd
-XRead(a *redis.XReadArgs) *redis.XStreamSliceCmd
-XReadStreams(streams ...string) *redis.XStreamSliceCmd
-XGroupCreate(stream, group, start string) *redis.StatusCmd
-XGroupCreateMkStream(stream, group, start string) *redis.StatusCmd
-XGroupSetID(stream, group, start string) *redis.StatusCmd
-XGroupDestroy(stream, group string) *redis.IntCmd
-XGroupDelConsumer(stream, group, consumer string) *redis.IntCmd
-XReadGroup(a *redis.XReadGroupArgs) *redis.XStreamSliceCmd
-XAck(stream, group string, ids ...string) *redis.IntCmd
-XPending(stream, group string) *redis.XPendingCmd
-XPendingExt(a *redis.XPendingExtArgs) *redis.XPendingExtCmd
-XClaim(a *redis.XClaimArgs) *redis.XMessageSliceCmd
-XClaimJustID(a *redis.XClaimArgs) *redis.StringSliceCmd
-XTrim(key string, maxLen int64) *redis.IntCmd
-XTrimApprox(key string, maxLen int64) *redis.IntCmd
-XInfoGroups(key string) *redis.XInfoGroupsCmd
+
+// XLen 返回流中的条目数。如果指定的key不存在，则此命令返回0，就好像该流为空。 但是请注意，与其他的Redis类型不同，零长度流是可能的，所以你应该调用TYPE 或者 EXISTS 来检查一个key是否存在。
+// 一旦内部没有任何的条目（例如调用XDEL后），流不会被自动删除，因为可能还存在与其相关联的消费者组。
+func (r *Client) XLen(stream string) *redis.IntCmd {
+	return r.client.XLen(stream)
+}
+
+// XRange 此命令返回流中满足给定ID范围的条目。范围由最小和最大ID指定。所有ID在指定的两个ID之间或与其中一个ID相等（闭合区间）的条目将会被返回。
+func (r *Client) XRange(stream, start, stop string) *redis.XMessageSliceCmd {
+	return r.client.XRange(stream, start, stop)
+}
+
+// XRangeN -> XRange
+func (r *Client) XRangeN(stream, start, stop string, count int64) *redis.XMessageSliceCmd {
+	return r.client.XRangeN(stream, start, stop, count)
+}
+
+// XRevRange 此命令与XRANGE完全相同，但显著的区别是以相反的顺序返回条目，并以相反的顺序获取开始-结束参数：在XREVRANGE中，你需要先指定结束ID，再指定开始ID，该命令就会从结束ID侧开始生成两个ID之间（或完全相同）的所有元素。
+func (r *Client) XRevRange(stream string, start, stop string) *redis.XMessageSliceCmd {
+	return r.client.XRevRange(stream, start, stop)
+}
+
+// XRevRangeN -> XRevRange
+func (r *Client) XRevRangeN(stream string, start, stop string, count int64) *redis.XMessageSliceCmd {
+	return r.client.XRevRangeN(stream, start, stop, count)
+}
+
+// XRead 从一个或者多个流中读取数据，仅返回ID大于调用者报告的最后接收ID的条目。此命令有一个阻塞选项，用于等待可用的项目，类似于BRPOP或者BZPOPMIN等等。
+func (r *Client) XRead(a *redis.XReadArgs) *redis.XStreamSliceCmd {
+	return r.client.XRead(a)
+}
+
+//XReadStreams -> XRead
+func (r *Client) XReadStreams(streams ...string) *redis.XStreamSliceCmd {
+	return r.client.XReadStreams(streams...)
+}
+
+// XGroupCreate command
+func (r *Client) XGroupCreate(stream, group, start string) *redis.StatusCmd {
+	return r.client.XGroupCreate(stream, group, start)
+}
+
+// XGroupCreateMkStream command
+func (r *Client) XGroupCreateMkStream(stream, group, start string) *redis.StatusCmd {
+	return r.client.XGroupCreateMkStream(stream, group, start)
+}
+
+// XGroupSetID command
+func (r *Client) XGroupSetID(stream, group, start string) *redis.StatusCmd {
+	return r.client.XGroupSetID(stream, group, start)
+}
+
+// XGroupDestroy command
+func (r *Client) XGroupDestroy(stream, group string) *redis.IntCmd {
+	return r.client.XGroupDestroy(stream, group)
+}
+
+// XGroupDelConsumer command
+func (r *Client) XGroupDelConsumer(stream, group, consumer string) *redis.IntCmd {
+	return r.client.XGroupDelConsumer(stream, group, consumer)
+}
+
+// XReadGroup command
+func (r *Client) XReadGroup(a *redis.XReadGroupArgs) *redis.XStreamSliceCmd {
+	return r.client.XReadGroup(a)
+}
+
+// XAck command
+func (r *Client) XAck(stream, group string, ids ...string) *redis.IntCmd {
+	return r.client.XAck(stream, group, ids...)
+}
+
+// XPending command
+func (r *Client) XPending(stream, group string) *redis.XPendingCmd {
+	return r.client.XPending(stream, group)
+}
+
+// XPendingExt command
+func (r *Client) XPendingExt(a *redis.XPendingExtArgs) *redis.XPendingExtCmd {
+	return r.client.XPendingExt(a)
+}
+
+// XClaim command
+func (r *Client) XClaim(a *redis.XClaimArgs) *redis.XMessageSliceCmd {
+	return r.client.XClaim(a)
+}
+
+// XClaimJustID command
+func (r *Client) XClaimJustID(a *redis.XClaimArgs) *redis.StringSliceCmd {
+	return r.client.XClaimJustID(a)
+}
+
+// XTrim command
+func (r *Client) XTrim(key string, maxLen int64) *redis.IntCmd {
+	return r.client.XTrim(key, maxLen)
+}
+
+// XTrimApprox command
+func (r *Client) XTrimApprox(key string, maxLen int64) *redis.IntCmd {
+	return r.client.XTrimApprox(key, maxLen)
+}
+
+// XInfoGroups command
+func (r *Client) XInfoGroups(key string) *redis.XInfoGroupsCmd {
+	return r.client.XInfoGroups(key)
+}
+
+// BZPopMax 是有序集合命令 ZPOPMAX带有阻塞功能的版本。
+func (r *Client) BZPopMax(timeout time.Duration, keys ...string) *redis.ZWithKeyCmd {
+	return r.client.BZPopMax(timeout, r.ks(keys...)...)
+}
+
+// BZPopMin 是有序集合命令 ZPOPMIN带有阻塞功能的版本。
+func (r *Client) BZPopMin(timeout time.Duration, keys ...string) *redis.ZWithKeyCmd {
+	return r.client.BZPopMin(timeout, r.ks(keys...)...)
+}
+
+// ZAdd 将一个或多个 member 元素及其 score 值加入到有序集 key 当中。
+// 如果某个 member 已经是有序集的成员，那么更新这个 member 的 score 值，并通过重新插入这个 member 元素，来保证该 member 在正确的位置上。
+// score 值可以是整数值或双精度浮点数。
+// 如果 key 不存在，则创建一个空的有序集并执行 ZADD 操作。
+// 当 key 存在但不是有序集类型时，返回一个错误。
+func (r *Client) ZAdd(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAdd(r.k(key), members...)
+}
+
+// ZAddNX -> ZAdd
+func (r *Client) ZAddNX(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAddNX(r.k(key), members...)
+}
+
+// ZAddXX -> ZAdd
+func (r *Client) ZAddXX(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAddXX(r.k(key), members...)
+}
+
+// ZAddCh -> ZAdd
+func (r *Client) ZAddCh(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAddCh(r.k(key), members...)
+}
+
+// ZAddNXCh -> ZAdd
+func (r *Client) ZAddNXCh(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAddNXCh(r.k(key), members...)
+}
+
+// ZAddXXCh -> ZAdd
+func (r *Client) ZAddXXCh(key string, members ...*redis.Z) *redis.IntCmd {
+	return r.client.ZAddXXCh(r.k(key), members...)
+}
+
+// ZIncr Redis `ZADD key INCR score member` command.
+func (r *Client) ZIncr(key string, member *redis.Z) *redis.FloatCmd {
+	return r.client.ZIncr(r.k(key), member)
+}
+
+// ZIncrNX Redis `ZADD key NX INCR score member` command.
+func (r *Client) ZIncrNX(key string, member *redis.Z) *redis.FloatCmd {
+	return r.client.ZIncrNX(r.k(key), member)
+}
+
+// ZIncrXX Redis `ZADD key XX INCR score member` command.
+func (r *Client) ZIncrXX(key string, member *redis.Z) *redis.FloatCmd {
+	return r.client.ZIncrXX(r.k(key), member)
+}
+
+// ZCard 返回有序集 key 的基数。
+func (r *Client) ZCard(key string) *redis.IntCmd {
+	return r.client.ZCard(r.k(key))
+}
+
+// ZCount 返回有序集 key 中， score 值在 min 和 max 之间(默认包括 score 值等于 min 或 max )的成员的数量。
+// 关于参数 min 和 max 的详细使用方法，请参考 ZRANGEBYSCORE 命令。
+func (r *Client) ZCount(key, min, max string) *redis.IntCmd {
+	return r.client.ZCount(r.k(key), min, max)
+}
+
+//ZLexCount -> ZCount
+func (r *Client) ZLexCount(key, min, max string) *redis.IntCmd {
+	return r.client.ZLexCount(r.k(key), min, max)
+}
+
+// ZIncrBy 为有序集 key 的成员 member 的 score 值加上增量 increment 。
+// 可以通过传递一个负数值 increment ，让 score 减去相应的值，比如 ZINCRBY key -5 member ，就是让 member 的 score 值减去 5 。
+// 当 key 不存在，或 member 不是 key 的成员时， ZINCRBY key increment member 等同于 ZADD key increment member 。
+// 当 key 不是有序集类型时，返回一个错误。
+// score 值可以是整数值或双精度浮点数。
+func (r *Client) ZIncrBy(key string, increment float64, member string) *redis.FloatCmd {
+	return r.client.ZIncrBy(r.k(key), increment, member)
+}
+
+// ZInterStore 计算给定的一个或多个有序集的交集，其中给定 key 的数量必须以 numkeys 参数指定，并将该交集(结果集)储存到 destination 。
+// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之和.
+// 关于 WEIGHTS 和 AGGREGATE 选项的描述，参见 ZUNIONSTORE 命令。
+func (r *Client) ZInterStore(key string, store *redis.ZStore) *redis.IntCmd {
+	return r.client.ZInterStore(r.k(key), store)
+}
+
+// ZPopMax 删除并返回有序集合key中的最多count个具有最高得分的成员。
+func (r *Client) ZPopMax(key string, count ...int64) *redis.ZSliceCmd {
+	return r.client.ZPopMax(r.k(key), count...)
+}
+
+// ZPopMin 删除并返回有序集合key中的最多count个具有最低得分的成员。
+func (r *Client) ZPopMin(key string, count ...int64) *redis.ZSliceCmd {
+	return r.client.ZPopMin(r.k(key), count...)
+}
+
+// ZRange 返回有序集 key 中，指定区间内的成员。
+// 其中成员的位置按 score 值递增(从小到大)来排序。
+func (r *Client) ZRange(key string, start, stop int64) *redis.StringSliceCmd {
+	return r.client.ZRange(r.k(key), start, stop)
+}
+
+// ZRangeWithScores -> ZRange
+func (r *Client) ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
+	return r.client.ZRangeWithScores(r.k(key), start, stop)
+}
+
+// ZRangeByScore 返回有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。有序集成员按 score 值递增(从小到大)次序排列。
+func (r *Client) ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return r.client.ZRangeByScore(r.k(key), opt)
+}
+
+// ZRangeByLex -> ZRangeByScore
+func (r *Client) ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return r.client.ZRangeByLex(r.k(key), opt)
+}
+
+// ZRangeByScoreWithScores -> ZRangeByScore
+func (r *Client) ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
+	return r.client.ZRangeByScoreWithScores(r.k(key), opt)
+}
+
+// ZRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递增(从小到大)顺序排列。
+// 排名以 0 为底，也就是说， score 值最小的成员排名为 0 。
+// 使用 ZREVRANK 命令可以获得成员按 score 值递减(从大到小)排列的排名。
+func (r *Client) ZRank(key, member string) *redis.IntCmd {
+	return r.client.ZRank(r.k(key), member)
+}
+
+// ZRem 移除有序集 key 中的一个或多个成员，不存在的成员将被忽略。
+// 当 key 存在但不是有序集类型时，返回一个错误。
+func (r *Client) ZRem(key string, members ...interface{}) *redis.IntCmd {
+	return r.client.ZRem(r.k(key), members...)
+}
+
+// ZRemRangeByRank 移除有序集 key 中，指定排名(rank)区间内的所有成员。
+// 区间分别以下标参数 start 和 stop 指出，包含 start 和 stop 在内。
+// 下标参数 start 和 stop 都以 0 为底，也就是说，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，以此类推。
+// 你也可以使用负数下标，以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推
+func (r *Client) ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd {
+	return r.client.ZRemRangeByRank(r.k(key), start, stop)
+}
+
+// ZRemRangeByScore 移除有序集 key 中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员。
+// 自版本2.1.6开始， score 值等于 min 或 max 的成员也可以不包括在内，详情请参见 ZRANGEBYSCORE 命令。
+func (r *Client) ZRemRangeByScore(key, min, max string) *redis.IntCmd {
+	return r.client.ZRemRangeByScore(r.k(key), min, max)
+}
+
+//ZRemRangeByLex -> ZRemRangeByScore
+func (r *Client) ZRemRangeByLex(key, min, max string) *redis.IntCmd {
+	return r.client.ZRemRangeByLex(r.k(key), min, max)
+}
+
+// ZRevRange 返回有序集 key 中，指定区间内的成员。
+// 其中成员的位置按 score 值递减(从大到小)来排列。
+// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order)排列。
+// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE 命令一样。
+func (r *Client) ZRevRange(key string, start, stop int64) *redis.StringSliceCmd {
+	return r.client.ZRevRange(r.k(key), start, stop)
+}
+
+//ZRevRangeWithScores -> ZRevRange
+func (r *Client) ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
+	return r.client.ZRevRangeWithScores(r.k(key), start, stop)
+}
+
+// ZRevRangeByScore 返回有序集 key 中， score 值介于 max 和 min 之间(默认包括等于 max 或 min )的所有的成员。有序集成员按 score 值递减(从大到小)的次序排列。
+// 具有相同 score 值的成员按字典序的逆序(reverse lexicographical order )排列。
+// 除了成员按 score 值递减的次序排列这一点外， ZREVRANGEBYSCORE 命令的其他方面和 ZRANGEBYSCORE 命令一样。
+func (r *Client) ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return r.client.ZRevRangeByScore(r.k(key), opt)
+}
+
+// ZRevRangeByLex -> ZRevRangeByScore
+func (r *Client) ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return r.client.ZRevRangeByLex(r.k(key), opt)
+}
+
+// ZRevRangeByScoreWithScores -> ZRevRangeByScore
+func (r *Client) ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
+	return r.client.ZRevRangeByScoreWithScores(r.k(key), opt)
+}
+
+// ZRevRank 返回有序集 key 中成员 member 的排名。其中有序集成员按 score 值递减(从大到小)排序。
+// 排名以 0 为底，也就是说， score 值最大的成员排名为 0 。
+// 使用 ZRANK 命令可以获得成员按 score 值递增(从小到大)排列的排名。
+func (r *Client) ZRevRank(key, member string) *redis.IntCmd {
+	return r.client.ZRevRank(r.k(key), member)
+}
+
+// ZScore 返回有序集 key 中，成员 member 的 score 值。
+// 如果 member 元素不是有序集 key 的成员，或 key 不存在，返回 nil 。
+func (r *Client) ZScore(key, member string) *redis.FloatCmd {
+	return r.client.ZScore(r.k(key), member)
+}
+
+// ZUnionStore 计算给定的一个或多个有序集的并集，其中给定 key 的数量必须以 numkeys 参数指定，并将该并集(结果集)储存到 destination 。
+// 默认情况下，结果集中某个成员的 score 值是所有给定集下该成员 score 值之 和 。
+func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
+	return r.client.ZUnionStore(r.k(dest), store)
+}
+
+
+
+PFAdd(key string, els ...interface{}) *redis.IntCmd
+	PFCount(keys ...string) *redis.IntCmd
+	PFMerge(dest string, keys ...string) *redis.StatusCmd
+	BgRewriteAOF() *redis.StatusCmd
+	BgSave() *redis.StatusCmd
+	ClientKill(ipPort string) *redis.StatusCmd
+	ClientKillByFilter(keys ...string) *redis.IntCmd
+	ClientList() *redis.StringCmd
+	ClientPause(dur time.Duration) *redis.BoolCmd
+	ClientID() *redis.IntCmd
+	ConfigGet(parameter string) *redis.SliceCmd
+	ConfigResetStat() *redis.StatusCmd
+	ConfigSet(parameter, value string) *redis.StatusCmd
+	ConfigRewrite() *redis.StatusCmd
+	DBSize() *redis.IntCmd
+	FlushAll() *redis.StatusCmd
+	FlushAllAsync() *redis.StatusCmd
+	FlushDB() *redis.StatusCmd
+	FlushDBAsync() *redis.StatusCmd
+	Info(section ...string) *redis.StringCmd
+	LastSave() *redis.IntCmd
+	Save() *redis.StatusCmd
+	Shutdown() *redis.StatusCmd
+	ShutdownSave() *redis.StatusCmd
+	ShutdownNoSave() *redis.StatusCmd
+	SlaveOf(host, port string) *redis.StatusCmd
+	Time() *redis.TimeCmd
+	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
+	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
+	ScriptExists(hashes ...string) *redis.BoolSliceCmd
+	ScriptFlush() *redis.StatusCmd
+	ScriptKill() *redis.StatusCmd
+	ScriptLoad(script string) *redis.StringCmd
+	DebugObject(key string) *redis.StringCmd
+	Publish(channel string, message interface{}) *redis.IntCmd
+	PubSubChannels(pattern string) *redis.StringSliceCmd
+	PubSubNumSub(channels ...string) *redis.StringIntMapCmd
+	PubSubNumPat() *redis.IntCmd
+	ClusterSlots() *redis.ClusterSlotsCmd
+	ClusterNodes() *redis.StringCmd
+	ClusterMeet(host, port string) *redis.StatusCmd
+	ClusterForget(nodeID string) *redis.StatusCmd
+	ClusterReplicate(nodeID string) *redis.StatusCmd
+	ClusterResetSoft() *redis.StatusCmd
+	ClusterResetHard() *redis.StatusCmd
+	ClusterInfo() *redis.StringCmd
+	ClusterKeySlot(key string) *redis.IntCmd
+	ClusterGetKeysInSlot(slot int, count int) *redis.StringSliceCmd
+	ClusterCountFailureReports(nodeID string) *redis.IntCmd
+	ClusterCountKeysInSlot(slot int) *redis.IntCmd
+	ClusterDelSlots(slots ...int) *redis.StatusCmd
+	ClusterDelSlotsRange(min, max int) *redis.StatusCmd
+	ClusterSaveConfig() *redis.StatusCmd
+	ClusterSlaves(nodeID string) *redis.StringSliceCmd
+	ClusterFailover() *redis.StatusCmd
+	ClusterAddSlots(slots ...int) *redis.StatusCmd
+	ClusterAddSlotsRange(min, max int) *redis.StatusCmd
+	GeoAdd(key string, geoLocation ...*redis.GeoLocation) *redis.IntCmd
+	GeoPos(key string, members ...string) *redis.GeoPosCmd
+	GeoRadius(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
+	GeoRadiusStore(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.IntCmd
+	GeoRadiusByMember(key, member string, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
+	GeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *redis.IntCmd
+	GeoDist(key string, member1, member2, unit string) *redis.FloatCmd
+	GeoHash(key string, members ...string) *redis.StringSliceCmd
+	ReadOnly() *redis.StatusCmd
+	ReadWrite() *redis.StatusCmd
+	MemoryUsage(key string, samples ...int) *redis.IntCmd
+	Subscribe(channels ...string) *redis.PubSub
 
 // ErrNotImplemented not implemented error
 var ErrNotImplemented = errors.New("Not implemented")

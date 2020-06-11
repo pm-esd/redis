@@ -32,6 +32,7 @@ type Commander interface {
 	ObjectEncoding(key string) *redis.StringCmd
 	ObjectIdleTime(key string) *redis.DurationCmd
 	Persist(key string) *redis.BoolCmd
+	PExpire(key string, expiration time.Duration) *redis.BoolCmd
 	PExpireAt(key string, tm time.Time) *redis.BoolCmd
 	PTTL(key string) *redis.DurationCmd
 	RandomKey() *redis.StringCmd
@@ -107,7 +108,6 @@ type Commander interface {
 	RPopLPush(source, destination string) *redis.StringCmd
 	RPush(key string, values ...interface{}) *redis.IntCmd
 	RPushX(key string, values ...interface{}) *redis.IntCmd
-
 	SAdd(key string, members ...interface{}) *redis.IntCmd
 	SCard(key string) *redis.IntCmd
 	SDiff(keys ...string) *redis.StringSliceCmd
@@ -125,7 +125,6 @@ type Commander interface {
 	SRem(key string, members ...interface{}) *redis.IntCmd
 	SUnion(keys ...string) *redis.StringSliceCmd
 	SUnionStore(destination string, keys ...string) *redis.IntCmd
-
 	XAdd(a *redis.XAddArgs) *redis.StringCmd
 	XDel(stream string, ids ...string) *redis.IntCmd
 	XLen(stream string) *redis.IntCmd
@@ -149,12 +148,8 @@ type Commander interface {
 	XTrim(key string, maxLen int64) *redis.IntCmd
 	XTrimApprox(key string, maxLen int64) *redis.IntCmd
 	XInfoGroups(key string) *redis.XInfoGroupsCmd
-
-	//
-	//
-	//
-	PExpire(key string, expiration time.Duration) *redis.BoolCmd
-
+	BZPopMax(timeout time.Duration, keys ...string) *redis.ZWithKeyCmd
+	BZPopMin(timeout time.Duration, keys ...string) *redis.ZWithKeyCmd
 	ZAdd(key string, members ...*redis.Z) *redis.IntCmd
 	ZAddNX(key string, members ...*redis.Z) *redis.IntCmd
 	ZAddXX(key string, members ...*redis.Z) *redis.IntCmd
@@ -166,8 +161,11 @@ type Commander interface {
 	ZIncrXX(key string, member *redis.Z) *redis.FloatCmd
 	ZCard(key string) *redis.IntCmd
 	ZCount(key, min, max string) *redis.IntCmd
+	ZLexCount(key, min, max string) *redis.IntCmd
 	ZIncrBy(key string, increment float64, member string) *redis.FloatCmd
 	ZInterStore(destination string, store *redis.ZStore) *redis.IntCmd
+	ZPopMax(key string, count ...int64) *redis.ZSliceCmd
+	ZPopMin(key string, count ...int64) *redis.ZSliceCmd
 	ZRange(key string, start, stop int64) *redis.StringSliceCmd
 	ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd
 	ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd
@@ -186,8 +184,84 @@ type Commander interface {
 	ZRevRank(key, member string) *redis.IntCmd
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd
-
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	PFAdd(key string, els ...interface{}) *redis.IntCmd
+	PFCount(keys ...string) *redis.IntCmd
+	PFMerge(dest string, keys ...string) *redis.StatusCmd
+	BgRewriteAOF() *redis.StatusCmd
+	BgSave() *redis.StatusCmd
+	ClientKill(ipPort string) *redis.StatusCmd
+	ClientKillByFilter(keys ...string) *redis.IntCmd
+	ClientList() *redis.StringCmd
+	ClientPause(dur time.Duration) *redis.BoolCmd
+	ClientID() *redis.IntCmd
+	ConfigGet(parameter string) *redis.SliceCmd
+	ConfigResetStat() *redis.StatusCmd
+	ConfigSet(parameter, value string) *redis.StatusCmd
+	ConfigRewrite() *redis.StatusCmd
+	DBSize() *redis.IntCmd
+	FlushAll() *redis.StatusCmd
+	FlushAllAsync() *redis.StatusCmd
+	FlushDB() *redis.StatusCmd
+	FlushDBAsync() *redis.StatusCmd
+	Info(section ...string) *redis.StringCmd
+	LastSave() *redis.IntCmd
+	Save() *redis.StatusCmd
+	Shutdown() *redis.StatusCmd
+	ShutdownSave() *redis.StatusCmd
+	ShutdownNoSave() *redis.StatusCmd
+	SlaveOf(host, port string) *redis.StatusCmd
+	Time() *redis.TimeCmd
+	Eval(script string, keys []string, args ...interface{}) *redis.Cmd
+	EvalSha(sha1 string, keys []string, args ...interface{}) *redis.Cmd
+	ScriptExists(hashes ...string) *redis.BoolSliceCmd
+	ScriptFlush() *redis.StatusCmd
+	ScriptKill() *redis.StatusCmd
+	ScriptLoad(script string) *redis.StringCmd
+	DebugObject(key string) *redis.StringCmd
 	Publish(channel string, message interface{}) *redis.IntCmd
-
+	PubSubChannels(pattern string) *redis.StringSliceCmd
+	PubSubNumSub(channels ...string) *redis.StringIntMapCmd
+	PubSubNumPat() *redis.IntCmd
+	ClusterSlots() *redis.ClusterSlotsCmd
+	ClusterNodes() *redis.StringCmd
+	ClusterMeet(host, port string) *redis.StatusCmd
+	ClusterForget(nodeID string) *redis.StatusCmd
+	ClusterReplicate(nodeID string) *redis.StatusCmd
+	ClusterResetSoft() *redis.StatusCmd
+	ClusterResetHard() *redis.StatusCmd
+	ClusterInfo() *redis.StringCmd
+	ClusterKeySlot(key string) *redis.IntCmd
+	ClusterGetKeysInSlot(slot int, count int) *redis.StringSliceCmd
+	ClusterCountFailureReports(nodeID string) *redis.IntCmd
+	ClusterCountKeysInSlot(slot int) *redis.IntCmd
+	ClusterDelSlots(slots ...int) *redis.StatusCmd
+	ClusterDelSlotsRange(min, max int) *redis.StatusCmd
+	ClusterSaveConfig() *redis.StatusCmd
+	ClusterSlaves(nodeID string) *redis.StringSliceCmd
+	ClusterFailover() *redis.StatusCmd
+	ClusterAddSlots(slots ...int) *redis.StatusCmd
+	ClusterAddSlotsRange(min, max int) *redis.StatusCmd
+	GeoAdd(key string, geoLocation ...*redis.GeoLocation) *redis.IntCmd
+	GeoPos(key string, members ...string) *redis.GeoPosCmd
+	GeoRadius(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
+	GeoRadiusStore(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *redis.IntCmd
+	GeoRadiusByMember(key, member string, query *redis.GeoRadiusQuery) *redis.GeoLocationCmd
+	GeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *redis.IntCmd
+	GeoDist(key string, member1, member2, unit string) *redis.FloatCmd
+	GeoHash(key string, members ...string) *redis.StringSliceCmd
+	ReadOnly() *redis.StatusCmd
+	ReadWrite() *redis.StatusCmd
+	MemoryUsage(key string, samples ...int) *redis.IntCmd
 	Subscribe(channels ...string) *redis.PubSub
 }
