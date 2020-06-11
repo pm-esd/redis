@@ -11,8 +11,40 @@ type Commander interface {
 	Pipeline() redis.Pipeliner
 	Pipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
 
-	// Pinger ping 服务器
+	TxPipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
+	TxPipeline() redis.Pipeliner
+
+	Command() *redis.CommandsInfoCmd
+	ClientGetName() *redis.StringCmd
+	Echo(message interface{}) *redis.StringCmd
 	Ping() *redis.StatusCmd
+	Quit() *redis.StatusCmd
+	Del(keys ...string) *redis.IntCmd
+	Unlink(keys ...string) *redis.IntCmd
+	Dump(key string) *redis.StringCmd
+	Exists(keys ...string) *redis.IntCmd
+	Expire(key string, expiration time.Duration) *redis.BoolCmd
+	ExpireAt(key string, tm time.Time) *redis.BoolCmd
+	Keys(pattern string) *redis.StringSliceCmd
+	Migrate(host, port, key string, db int, timeout time.Duration) *redis.StatusCmd
+	Move(key string, db int) *redis.BoolCmd
+	ObjectRefCount(key string) *redis.IntCmd
+	ObjectEncoding(key string) *redis.StringCmd
+	ObjectIdleTime(key string) *redis.DurationCmd
+	Persist(key string) *redis.BoolCmd
+	PExpireAt(key string, tm time.Time) *redis.BoolCmd
+	PTTL(key string) *redis.DurationCmd
+	RandomKey() *redis.StringCmd
+	Rename(key, newkey string) *redis.StatusCmd
+	RenameNX(key, newkey string) *redis.BoolCmd
+	Restore(key string, ttl time.Duration, value string) *redis.StatusCmd
+	RestoreReplace(key string, ttl time.Duration, value string) *redis.StatusCmd
+	Sort(key string, sort *redis.Sort) *redis.StringSliceCmd
+	SortStore(key, store string, sort *redis.Sort) *redis.IntCmd
+	SortInterfaces(key string, sort *redis.Sort) *redis.SliceCmd
+	Touch(keys ...string) *redis.IntCmd
+	TTL(key string) *redis.DurationCmd
+	Type(key string) *redis.StatusCmd
 
 	// Incrementer interface 递增
 	Incr(key string) *redis.IntCmd
@@ -23,29 +55,20 @@ type Commander interface {
 	DecrBy(key string, value int64) *redis.IntCmd
 
 	// Expirer interface 过期的方法
-	Expire(key string, expiration time.Duration) *redis.BoolCmd
-	ExpireAt(key string, tm time.Time) *redis.BoolCmd
-	Persist(key string) *redis.BoolCmd
 
 	PExpire(key string, expiration time.Duration) *redis.BoolCmd
-	PExpireAt(key string, tm time.Time) *redis.BoolCmd
-	PTTL(key string) *redis.DurationCmd
-	TTL(key string) *redis.DurationCmd
 
 	// Getter interface 获取key命令
-	Exists(keys ...string) *redis.IntCmd
+
 	Get(key string) *redis.StringCmd
 	GetBit(key string, offset int64) *redis.IntCmd
 	GetRange(key string, start, end int64) *redis.StringCmd
 	GetSet(key string, value interface{}) *redis.StringCmd
 	MGet(keys ...string) *redis.SliceCmd
-	Dump(key string) *redis.StringCmd
 
 	// Setter interface 设置key命令
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	Append(key, value string) *redis.IntCmd
-	Del(keys ...string) *redis.IntCmd
-	Unlink(keys ...string) *redis.IntCmd
 
 	MSet(values ...interface{}) *redis.StatusCmd
 	MSetNX(values ...interface{}) *redis.BoolCmd
@@ -131,7 +154,6 @@ type Commander interface {
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd
 
-	Type(key string) *redis.StatusCmd
 	Scan(cursor uint64, match string, count int64) *redis.ScanCmd
 	SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	HScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd

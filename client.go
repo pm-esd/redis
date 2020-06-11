@@ -156,13 +156,6 @@ func (r *Client) GetClient() Commander {
 	return r.client
 }
 
-// Ping 使用客户端向 Redis 服务器发送一个 PING ，如果服务器运作正常的话，会返回一个 PONG 。
-// 通常用于测试与服务器的连接是否仍然生效，或者用于测量延迟值。
-// 如果连接正常就返回一个 PONG ，否则返回一个连接错误。
-func (r *Client) Ping() *redis.StatusCmd {
-	return r.client.Ping()
-}
-
 // Incr 将 key 中储存的数字值增一。
 // 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。
 // 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
@@ -202,57 +195,9 @@ func (r *Client) DecrBy(key string, value int64) *redis.IntCmd {
 	return r.client.DecrBy(r.k(key), value)
 }
 
-// Expire 为给定 key 设置生存时间，当 key 过期时(生存时间为 0 )，它会被自动删除。
-// 设置成功返回 1 。
-// 当 key 不存在或者不能为 key 设置生存时间时(比如在低于 2.1.3 版本的 Redis 中你尝试更新 key 的生存时间)，返回 0 。
-func (r *Client) Expire(key string, expiration time.Duration) *redis.BoolCmd {
-	return r.client.Expire(r.k(key), expiration)
-}
-
-// ExpireAt  EXPIREAT 的作用和 EXPIRE 类似，都用于为 key 设置生存时间。
-// 命令用于以 UNIX 时间戳(unix timestamp)格式设置 key 的过期时间
-func (r *Client) ExpireAt(key string, tm time.Time) *redis.BoolCmd {
-	return r.client.ExpireAt(r.k(key), tm)
-}
-
-// Persist 移除给定 key 的生存时间，将这个 key 从『易失的』(带生存时间 key )转换成『持久的』(一个不带生存时间、永不过期的 key )。
-// 当生存时间移除成功时，返回 1 .
-// 如果 key 不存在或 key 没有设置生存时间，返回 0 。
-func (r *Client) Persist(key string) *redis.BoolCmd {
-	return r.client.Persist(r.k(key))
-}
-
 // PExpire 毫秒为单位设置 key 的生存时间
 func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.PExpire(r.k(key), expiration)
-}
-
-// PExpireAt 这个命令和 expireat 命令类似，但它以毫秒为单位设置 key 的过期 unix 时间戳，而不是像 expireat 那样，以秒为单位。
-// 如果生存时间设置成功，返回 1 。 当 key 不存在或没办法设置生存时间时，返回 0
-func (r *Client) PExpireAt(key string, tm time.Time) *redis.BoolCmd {
-	return r.client.PExpireAt(r.k(key), tm)
-}
-
-// PTTL 这个命令类似于 TTL 命令，但它以毫秒为单位返回 key 的剩余生存时间，而不是像 TTL 命令那样，以秒为单位。
-// 当 key 不存在时，返回 -2 。
-// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
-// 否则，以毫秒为单位，返回 key 的剩余生存时间。
-func (r *Client) PTTL(key string) *redis.DurationCmd {
-	return r.client.PTTL(r.k(key))
-}
-
-// TTL 以秒为单位，返回给定 key 的剩余生存时间(TTL, time to live)。
-// 当 key 不存在时，返回 -2 。
-// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
-// 否则，以秒为单位，返回 key 的剩余生存时间。
-func (r *Client) TTL(key string) *redis.DurationCmd {
-	return r.client.TTL(r.k(key))
-}
-
-// Exists 检查给定 key 是否存在。
-// 若 key 存在，返回 1 ，否则返回 0 。
-func (r *Client) Exists(key ...string) *redis.IntCmd {
-	return r.client.Exists(r.ks(key...)...)
 }
 
 // Get 返回 key 所关联的字符串值。
@@ -361,13 +306,6 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 // 一个包含所有给定 key 的值的列表。
 func (r *Client) MGet(keys ...string) *redis.SliceCmd {
 	return r.client.MGet(r.ks(keys...)...)
-}
-
-// Dump 序列化给定 key ，并返回被序列化的值，使用 RESTORE 命令可以将这个值反序列化为 Redis 键。
-// 如果 key 不存在，那么返回 nil 。
-// 否则，返回序列化之后的值。
-func (r *Client) Dump(key string) *redis.StringCmd {
-	return r.client.Dump(r.k(key))
 }
 
 //HExists 查看哈希表 key 中，给定域 field 是否存在。
@@ -571,17 +509,6 @@ func (r *Client) Set(key string, value interface{}, expiration time.Duration) *r
 // 如果 key 不存在， APPEND 就简单地将给定 key 设为 value ，就像执行 SET key value 一样。
 func (r *Client) Append(key, value string) *redis.IntCmd {
 	return r.client.Append(r.k(key), value)
-}
-
-// Del 删除给定的一个或多个 key 。
-// 不存在的 key 会被忽略。
-func (r *Client) Del(keys ...string) *redis.IntCmd {
-	return r.client.Del(r.ks(keys...)...)
-}
-
-// Unlink 这个命令非常类似于DEL：它删除指定的键。就像DEL键一样，如果它不存在，它将被忽略。但是，该命令在不同的线程中执行实际的内存回收，所以它不会阻塞，而DEL是。这是命令名称的来源：命令只是将键与键空间断开连接。实际删除将在以后异步发生。
-func (r *Client) Unlink(keys ...string) *redis.IntCmd {
-	return r.client.Unlink(r.ks(keys...)...)
 }
 
 // MSet 同时设置一个或多个 key-value 对。
@@ -882,51 +809,264 @@ func (r *Client) ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd {
 	return r.client.ZUnionStore(r.k(dest), store)
 }
 
+// BLPop 是列表的阻塞式(blocking)弹出原语。
+// 它是 LPop 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BLPop 命令阻塞，直到等待超时或发现可弹出元素为止。
+// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的头元素。
 func (r *Client) BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
 	return r.client.BLPop(timeout, r.ks(keys...)...)
 }
+
+// BRPop 是列表的阻塞式(blocking)弹出原语。
+// 它是 RPOP 命令的阻塞版本，当给定列表内没有任何元素可供弹出的时候，连接将被 BRPOP 命令阻塞，直到等待超时或发现可弹出元素为止。
+// 当给定多个 key 参数时，按参数 key 的先后顺序依次检查各个列表，弹出第一个非空列表的尾部元素。
+// 关于阻塞操作的更多信息，请查看 BLPOP 命令， BRPOP 除了弹出元素的位置和 BLPOP 不同之外，其他表现一致。
 func (r *Client) BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd {
 	return r.client.BRPop(timeout, r.ks(keys...)...)
 }
+
+// BRPopLPush 是 RPOPLPUSH 的阻塞版本，当给定列表 source 不为空时， BRPOPLPUSH 的表现和 RPOPLPUSH 一样。
+// 当列表 source 为空时， BRPOPLPUSH 命令将阻塞连接，直到等待超时，或有另一个客户端对 source 执行 LPUSH 或 RPUSH 命令为止。
 func (r *Client) BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd {
 	return r.client.BRPopLPush(r.k(source), r.k(destination), timeout)
 }
 
-// -------------- Scanner
-
-func (r *Client) Type(key string) *redis.StatusCmd {
-	return r.client.Type(r.k(key))
-}
+// Scan 命令及其相关的 SSCAN 命令、 HSCAN 命令和 ZSCAN 命令都用于增量地迭代（incrementally iterate）一集元素
 func (r *Client) Scan(cursor uint64, match string, count int64) *redis.ScanCmd {
 	return r.client.Scan(cursor, r.k(match), count)
 }
+
+// SScan 详细信息请参考 SCAN 命令。
 func (r *Client) SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
 	return r.client.SScan(r.k(key), cursor, match, count)
 }
+
+// ZScan 详细信息请参考 SCAN 命令。
 func (r *Client) ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
 	return r.client.ZScan(r.k(key), cursor, match, count)
 }
+
+// HScan 详细信息请参考 SCAN 命令。
 func (r *Client) HScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd {
 	return r.client.HScan(r.k(key), cursor, match, count)
 }
 
-// -------------- Publisher
-
+// Publish 将信息 message 发送到指定的频道 channel 。
 func (r *Client) Publish(channel string, message interface{}) *redis.IntCmd {
 	return r.client.Publish(r.k(channel), message)
 }
+
+// Subscribe 订阅给定的一个或多个频道的信息。
 func (r *Client) Subscribe(channels ...string) *redis.PubSub {
 	return r.client.Subscribe(r.ks(channels...)...)
 }
+
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
+// ================================================================================================================================================
 
 // Pipeline 获取管道
 func (r *Client) Pipeline() redis.Pipeliner {
 	return r.client.Pipeline()
 }
 
-//Pipelined .
+//Pipelined 管道
 func (r *Client) Pipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error) {
 	return r.Pipelined(fn)
+}
+
+//TxPipeline 获取管道
+func (r *Client) TxPipeline() redis.Pipeliner {
+	return r.client.TxPipeline()
+}
+
+//TxPipelined 管道
+func (r *Client) TxPipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error) {
+	return r.TxPipelined(fn)
+}
+
+//Command 返回有关所有Redis命令的详细信息的Array回复
+func (r *Client) Command() *redis.CommandsInfoCmd {
+	return r.client.Command()
+}
+
+// ClientGetName returns the name of the connection.
+func (r *Client) ClientGetName() *redis.StringCmd {
+	return r.client.ClientGetName()
+}
+
+// Echo  批量字符串回复
+func (r *Client) Echo(message interface{}) *redis.StringCmd {
+	return r.client.Echo(message)
+}
+
+// Ping 使用客户端向 Redis 服务器发送一个 PING ，如果服务器运作正常的话，会返回一个 PONG 。
+// 通常用于测试与服务器的连接是否仍然生效，或者用于测量延迟值。
+// 如果连接正常就返回一个 PONG ，否则返回一个连接错误。
+func (r *Client) Ping() *redis.StatusCmd {
+	return r.client.Ping()
+}
+
+//Quit 关闭连接
+func (r *Client) Quit() *redis.StatusCmd {
+	return r.client.Quit()
+}
+
+// Del 删除给定的一个或多个 key 。
+// 不存在的 key 会被忽略。
+func (r *Client) Del(keys ...string) *redis.IntCmd {
+	return r.client.Del(r.ks(keys...)...)
+}
+
+// Unlink 这个命令非常类似于DEL：它删除指定的键。就像DEL键一样，如果它不存在，它将被忽略。但是，该命令在不同的线程中执行实际的内存回收，所以它不会阻塞，而DEL是。这是命令名称的来源：命令只是将键与键空间断开连接。实际删除将在以后异步发生。
+func (r *Client) Unlink(keys ...string) *redis.IntCmd {
+	return r.client.Unlink(r.ks(keys...)...)
+}
+
+// Dump 序列化给定 key ，并返回被序列化的值，使用 RESTORE 命令可以将这个值反序列化为 Redis 键。
+// 如果 key 不存在，那么返回 nil 。
+// 否则，返回序列化之后的值。
+func (r *Client) Dump(key string) *redis.StringCmd {
+	return r.client.Dump(r.k(key))
+}
+
+// Exists 检查给定 key 是否存在。
+// 若 key 存在，返回 1 ，否则返回 0 。
+func (r *Client) Exists(key ...string) *redis.IntCmd {
+	return r.client.Exists(r.ks(key...)...)
+}
+
+// Expire 为给定 key 设置生存时间，当 key 过期时(生存时间为 0 )，它会被自动删除。
+// 设置成功返回 1 。
+// 当 key 不存在或者不能为 key 设置生存时间时(比如在低于 2.1.3 版本的 Redis 中你尝试更新 key 的生存时间)，返回 0 。
+func (r *Client) Expire(key string, expiration time.Duration) *redis.BoolCmd {
+	return r.client.Expire(r.k(key), expiration)
+}
+
+// ExpireAt  EXPIREAT 的作用和 EXPIRE 类似，都用于为 key 设置生存时间。
+// 命令用于以 UNIX 时间戳(unix timestamp)格式设置 key 的过期时间
+func (r *Client) ExpireAt(key string, tm time.Time) *redis.BoolCmd {
+	return r.client.ExpireAt(r.k(key), tm)
+}
+
+// Keys 查找所有符合给定模式 pattern 的 key 。
+func (r *Client) Keys(pattern string) *redis.StringSliceCmd {
+	return r.client.Keys(r.k(pattern))
+}
+
+//Migrate 将 key 原子性地从当前实例传送到目标实例的指定数据库上，一旦传送成功， key 保证会出现在目标实例上，而当前实例上的 key 会被删除。
+func (r *Client) Migrate(host, port, key string, db int, timeout time.Duration) *redis.StatusCmd {
+	return r.client.Migrate(host, port, r.k(key), db, timeout)
+}
+
+// Move 将当前数据库的 key 移动到给定的数据库 db 当中。
+// 如果当前数据库(源数据库)和给定数据库(目标数据库)有相同名字的给定 key ，或者 key 不存在于当前数据库，那么 MOVE 没有任何效果。
+func (r *Client) Move(key string, db int) *redis.BoolCmd {
+	return r.client.Move(r.k(key), db)
+}
+
+//ObjectRefCount 返回给定 key 引用所储存的值的次数。此命令主要用于除错。
+func (r *Client) ObjectRefCount(key string) *redis.IntCmd {
+	return r.client.ObjectRefCount(r.k(key))
+}
+
+//ObjectEncoding 返回给定 key 锁储存的值所使用的内部表示(representation)。
+func (r *Client) ObjectEncoding(key string) *redis.StringCmd {
+	return r.client.ObjectEncoding(r.k(key))
+}
+
+//ObjectIdleTime 返回给定 key 自储存以来的空转时间(idle， 没有被读取也没有被写入)，以秒为单位。
+func (r *Client) ObjectIdleTime(key string) *redis.DurationCmd {
+	return r.client.ObjectIdleTime(r.k(key))
+}
+
+// Persist 移除给定 key 的生存时间，将这个 key 从『易失的』(带生存时间 key )转换成『持久的』(一个不带生存时间、永不过期的 key )。
+// 当生存时间移除成功时，返回 1 .
+// 如果 key 不存在或 key 没有设置生存时间，返回 0 。
+func (r *Client) Persist(key string) *redis.BoolCmd {
+	return r.client.Persist(r.k(key))
+}
+
+// PExpireAt 这个命令和 expireat 命令类似，但它以毫秒为单位设置 key 的过期 unix 时间戳，而不是像 expireat 那样，以秒为单位。
+// 如果生存时间设置成功，返回 1 。 当 key 不存在或没办法设置生存时间时，返回 0
+func (r *Client) PExpireAt(key string, tm time.Time) *redis.BoolCmd {
+	return r.client.PExpireAt(r.k(key), tm)
+}
+
+// PTTL 这个命令类似于 TTL 命令，但它以毫秒为单位返回 key 的剩余生存时间，而不是像 TTL 命令那样，以秒为单位。
+// 当 key 不存在时，返回 -2 。
+// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
+// 否则，以毫秒为单位，返回 key 的剩余生存时间。
+func (r *Client) PTTL(key string) *redis.DurationCmd {
+	return r.client.PTTL(r.k(key))
+}
+
+// RandomKey 从当前数据库中随机返回(不删除)一个 key 。
+func (r *Client) RandomKey() *redis.StringCmd {
+	return r.client.RandomKey()
+}
+
+// Rename 将 key 改名为 newkey 。
+// 当 key 和 newkey 相同，或者 key 不存在时，返回一个错误。
+// 当 newkey 已经存在时， RENAME 命令将覆盖旧值。
+func (r *Client) Rename(key, newkey string) *redis.StatusCmd {
+	return r.client.Rename(r.k(key), r.k(newkey))
+}
+
+// RenameNX 当且仅当 newkey 不存在时，将 key 改名为 newkey 。
+// 当 key 不存在时，返回一个错误。
+func (r *Client) RenameNX(key, newkey string) *redis.BoolCmd {
+	return r.client.RenameNX(r.k(key), r.k(newkey))
+}
+
+// Restore 反序列化给定的序列化值，并将它和给定的 key 关联。
+// 参数 ttl 以毫秒为单位为 key 设置生存时间；如果 ttl 为 0 ，那么不设置生存时间。
+// RESTORE 在执行反序列化之前会先对序列化值的 RDB 版本和数据校验和进行检查，如果 RDB 版本不相同或者数据不完整的话，那么 RESTORE 会拒绝进行反序列化，并返回一个错误。
+func (r *Client) Restore(key string, ttl time.Duration, value string) *redis.StatusCmd {
+	return r.client.Restore(r.k(key), ttl, value)
+}
+
+// RestoreReplace -> Restore
+func (r *Client) RestoreReplace(key string, ttl time.Duration, value string) *redis.StatusCmd {
+	return r.client.RestoreReplace(r.k(key), ttl, value)
+}
+
+// Sort 返回或保存给定列表、集合、有序集合 key 中经过排序的元素。
+// 排序默认以数字作为对象，值被解释为双精度浮点数，然后进行比较。
+func (r *Client) Sort(key string, sort *redis.Sort) *redis.StringSliceCmd {
+	return r.client.Sort(r.k(key), sort)
+}
+
+//SortStore -> Sort
+func (r *Client) SortStore(key, store string, sort *redis.Sort) *redis.IntCmd {
+	return r.client.SortStore(r.k(key), store, sort)
+}
+
+//SortInterfaces -> Sort
+func (r *Client) SortInterfaces(key string, sort *redis.Sort) *redis.SliceCmd {
+	return r.client.SortInterfaces(r.k(key), sort)
+}
+
+// Touch 更改键的上次访问时间。返回指定的现有键的数量。
+func (r *Client) Touch(keys ...string) *redis.IntCmd {
+	return r.client.Touch(r.ks(keys...)...)
+}
+
+// TTL 以秒为单位，返回给定 key 的剩余生存时间(TTL, time to live)。
+// 当 key 不存在时，返回 -2 。
+// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
+// 否则，以秒为单位，返回 key 的剩余生存时间。
+func (r *Client) TTL(key string) *redis.DurationCmd {
+	return r.client.TTL(r.k(key))
+}
+
+// Type 返回 key 所储存的值的类型。
+func (r *Client) Type(key string) *redis.StatusCmd {
+	return r.client.Type(r.k(key))
 }
 
 // ErrNotImplemented not implemented error
