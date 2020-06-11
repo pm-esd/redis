@@ -192,22 +192,32 @@ func (r *Client) Decr(key string) *redis.IntCmd {
 	return r.client.Decr(r.k(key))
 }
 
-// DecrBy 使用增量值递减
+// DecrBy 将 key 所储存的值减去减量 decrement 。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECRBY 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于更多递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
+// 减去 decrement 之后， key 的值。
 func (r *Client) DecrBy(key string, value int64) *redis.IntCmd {
 	return r.client.DecrBy(r.k(key), value)
 }
 
-// Expire 过期方法
+// Expire 为给定 key 设置生存时间，当 key 过期时(生存时间为 0 )，它会被自动删除。
+// 设置成功返回 1 。
+// 当 key 不存在或者不能为 key 设置生存时间时(比如在低于 2.1.3 版本的 Redis 中你尝试更新 key 的生存时间)，返回 0 。
 func (r *Client) Expire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.Expire(r.k(key), expiration)
 }
 
-// ExpireAt  命令用于以 UNIX 时间戳(unix timestamp)格式设置 key 的过期时间
+// ExpireAt  EXPIREAT 的作用和 EXPIRE 类似，都用于为 key 设置生存时间。
+// 命令用于以 UNIX 时间戳(unix timestamp)格式设置 key 的过期时间
 func (r *Client) ExpireAt(key string, tm time.Time) *redis.BoolCmd {
 	return r.client.ExpireAt(r.k(key), tm)
 }
 
-// Persist 移除 key 的过期时间
+// Persist 移除给定 key 的生存时间，将这个 key 从『易失的』(带生存时间 key )转换成『持久的』(一个不带生存时间、永不过期的 key )。
+// 当生存时间移除成功时，返回 1 .
+// 如果 key 不存在或 key 没有设置生存时间，返回 0 。
 func (r *Client) Persist(key string) *redis.BoolCmd {
 	return r.client.Persist(r.k(key))
 }
@@ -239,27 +249,40 @@ func (r *Client) TTL(key string) *redis.DurationCmd {
 	return r.client.TTL(r.k(key))
 }
 
-// Exists exists command
+// Exists 检查给定 key 是否存在。
+// 若 key 存在，返回 1 ，否则返回 0 。
 func (r *Client) Exists(key ...string) *redis.IntCmd {
 	return r.client.Exists(r.ks(key...)...)
 }
 
-// Get get key value
+// Get 返回 key 所关联的字符串值。
+// 如果 key 不存在那么返回特殊值 nil 。
+// 假如 key 储存的值不是字符串类型，返回一个错误，因为 GET 只能用于处理字符串值。
+// 当 key 不存在时，返回 nil ，否则，返回 key 的值。
+// 如果 key 不是字符串类型，那么返回一个错误。
 func (r *Client) Get(key string) *redis.StringCmd {
 	return r.client.Get(r.k(key))
 }
 
-// GetBit getbit key value
+// GetBit 对 key 所储存的字符串值，获取指定偏移量上的位(bit)。
+// 当 offset 比字符串值的长度大，或者 key 不存在时，返回 0 。
+// 字符串值指定偏移量上的位(bit)。
 func (r *Client) GetBit(key string, offset int64) *redis.IntCmd {
 	return r.client.GetBit(r.k(key), offset)
 }
 
-// GetRange GetRange key value
+// GetRange 返回 key 中字符串值的子字符串，字符串的截取范围由 start 和 end 两个偏移量决定(包括 start 和 end 在内)。
+// 负数偏移量表示从字符串最后开始计数， -1 表示最后一个字符， -2 表示倒数第二个，以此类推。
+// GETRANGE 通过保证子字符串的值域(range)不超过实际字符串的值域来处理超出范围的值域请求。
+// 返回截取得出的子字符串。
 func (r *Client) GetRange(key string, start, end int64) *redis.StringCmd {
 	return r.client.GetRange(r.k(key), start, end)
 }
 
-// GetSet getset command
+// GetSet 将给定 key 的值设为 value ，并返回 key 的旧值(old value)。
+// 当 key 存在但不是字符串类型时，返回一个错误。
+// 返回给定 key 的旧值。
+// 当 key 没有旧值时，也即是， key 不存在时，返回 nil 。
 func (r *Client) GetSet(key string, value interface{}) *redis.StringCmd {
 	return r.client.GetSet(r.k(key), value)
 }
@@ -333,89 +356,161 @@ func (r *Client) MGetByPipeline(keys ...string) ([]string, error) {
 	return res, err
 }
 
-// MGet Multiple get command
+// MGet 返回所有(一个或多个)给定 key 的值。
+// 如果给定的 key 里面，有某个 key 不存在，那么这个 key 返回特殊值 nil 。因此，该命令永不失败。
+// 一个包含所有给定 key 的值的列表。
 func (r *Client) MGet(keys ...string) *redis.SliceCmd {
 	return r.client.MGet(r.ks(keys...)...)
 }
 
-// Dump dump command
+// Dump 序列化给定 key ，并返回被序列化的值，使用 RESTORE 命令可以将这个值反序列化为 Redis 键。
+// 如果 key 不存在，那么返回 nil 。
+// 否则，返回序列化之后的值。
 func (r *Client) Dump(key string) *redis.StringCmd {
 	return r.client.Dump(r.k(key))
 }
 
-// -------------- Hasher
-
+//HExists 查看哈希表 key 中，给定域 field 是否存在。
 func (r *Client) HExists(key, field string) *redis.BoolCmd {
 	return r.client.HExists(r.k(key), field)
 }
+
+// HGet 返回哈希表 key 中给定域 field 的值。
 func (r *Client) HGet(key, field string) *redis.StringCmd {
 	return r.client.HGet(r.k(key), field)
 }
+
+// HGetAll 返回哈希表 key 中，所有的域和值。
+// 在返回值里，紧跟每个域名(field name)之后是域的值(value)，所以返回值的长度是哈希表大小的两倍。
 func (r *Client) HGetAll(key string) *redis.StringStringMapCmd {
 	return r.client.HGetAll(r.k(key))
 }
+
+// HIncrBy 为哈希表 key 中的域 field 的值加上增量 increment 。
+// 增量也可以为负数，相当于对给定域进行减法操作。
+// 如果 key 不存在，一个新的哈希表被创建并执行 HINCRBY 命令。
+// 如果域 field 不存在，那么在执行命令前，域的值被初始化为 0 。
+// 对一个储存字符串值的域 field 执行 HINCRBY 命令将造成一个错误。
+// 本操作的值被限制在 64 位(bit)有符号数字表示之内。
 func (r *Client) HIncrBy(key, field string, incr int64) *redis.IntCmd {
 	return r.client.HIncrBy(r.k(key), field, incr)
 }
+
+// HIncrByFloat 为哈希表 key 中的域 field 加上浮点数增量 increment 。
+// 如果哈希表中没有域 field ，那么 HINCRBYFLOAT 会先将域 field 的值设为 0 ，然后再执行加法操作。
+// 如果键 key 不存在，那么 HINCRBYFLOAT 会先创建一个哈希表，再创建域 field ，最后再执行加法操作。
 func (r *Client) HIncrByFloat(key, field string, incr float64) *redis.FloatCmd {
 	return r.client.HIncrByFloat(r.k(key), field, incr)
 }
+
+// HKeys 返回哈希表 key 中的所有域。
 func (r *Client) HKeys(key string) *redis.StringSliceCmd {
 	return r.client.HKeys(r.k(key))
 }
+
+//HLen 返回哈希表 key 中域的数量。
 func (r *Client) HLen(key string) *redis.IntCmd {
 	return r.client.HLen(r.k(key))
 }
+
+// HMGet 返回哈希表 key 中，一个或多个给定域的值。
+// 如果给定的域不存在于哈希表，那么返回一个 nil 值。
+// 因为不存在的 key 被当作一个空哈希表来处理，所以对一个不存在的 key 进行 HMGET 操作将返回一个只带有 nil 值的表。
 func (r *Client) HMGet(key string, fields ...string) *redis.SliceCmd {
 	return r.client.HMGet(r.k(key), fields...)
 }
 
+// HMSet 同时将多个 field-value (域-值)对设置到哈希表 key 中。
+// 此命令会覆盖哈希表中已存在的域。
+// 如果 key 不存在，一个空哈希表被创建并执行 HMSET 操作。
 func (r *Client) HMSet(key string, value ...interface{}) *redis.BoolCmd {
 	return r.client.HMSet(r.k(key), value...)
 }
 
+// HSet 将哈希表 key 中的域 field 的值设为 value 。
+// 如果 key 不存在，一个新的哈希表被创建并进行 HSET 操作。
+// 如果域 field 已经存在于哈希表中，旧值将被覆盖。
 func (r *Client) HSet(key string, value ...interface{}) *redis.IntCmd {
 	return r.client.HSet(r.k(key), value...)
 }
+
+// HSetNX 将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在。
+// 若域 field 已经存在，该操作无效。
+// 如果 key 不存在，一个新哈希表被创建并执行 HSETNX 命令。
 func (r *Client) HSetNX(key, field string, value interface{}) *redis.BoolCmd {
 	return r.client.HSetNX(r.k(key), field, value)
 }
+
+// HVals 返回哈希表 key 中所有域的值。
 func (r *Client) HVals(key string) *redis.StringSliceCmd {
 	return r.client.HVals(r.k(key))
 }
+
+// HDel 删除哈希表 key 中的一个或多个指定域，不存在的域将被忽略。
 func (r *Client) HDel(key string, fields ...string) *redis.IntCmd {
 	return r.client.HDel(r.k(key), fields...)
 }
 
-// -------------- Lister
-
+// LIndex 返回列表 key 中，下标为 index 的元素。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
+// 如果 key 不是列表类型，返回一个错误。
 func (r *Client) LIndex(key string, index int64) *redis.StringCmd {
 	return r.client.LIndex(r.k(key), index)
 }
+
+// LInsert 将值 value 插入到列表 key 当中，位于值 pivot 之前或之后。
+// 当 pivot 不存在于列表 key 时，不执行任何操作。
+// 当 key 不存在时， key 被视为空列表，不执行任何操作。
+// 如果 key 不是列表类型，返回一个错误。
 func (r *Client) LInsert(key, op string, pivot, value interface{}) *redis.IntCmd {
 	return r.client.LInsert(r.k(key), op, pivot, value)
 }
+
+// LInsertAfter 同 LInsert
 func (r *Client) LInsertAfter(key string, pivot, value interface{}) *redis.IntCmd {
 	return r.client.LInsertAfter(r.k(key), pivot, value)
 }
+
+// LInsertBefore 同 LInsert
 func (r *Client) LInsertBefore(key string, pivot, value interface{}) *redis.IntCmd {
 	return r.client.LInsertBefore(r.k(key), pivot, value)
 }
+
+// LLen 返回列表 key 的长度。
+// 如果 key 不存在，则 key 被解释为一个空列表，返回 0 .
+// 如果 key 不是列表类型，返回一个错误。
 func (r *Client) LLen(key string) *redis.IntCmd {
 	return r.client.LLen(r.k(key))
 }
+
+// LPop 移除并返回列表 key 的头元素。
 func (r *Client) LPop(key string) *redis.StringCmd {
 	return r.client.LPop(r.k(key))
 }
+
+// LPush 将一个或多个值 value 插入到列表 key 的表头
+// 如果有多个 value 值，那么各个 value 值按从左到右的顺序依次插入到表头
+// 如果 key 不存在，一个空列表会被创建并执行 LPush 操作。
+// 当 key 存在但不是列表类型时，返回一个错误。
 func (r *Client) LPush(key string, values ...interface{}) *redis.IntCmd {
 	return r.client.LPush(r.k(key), values...)
 }
+
+// LPushX 将值 value 插入到列表 key 的表头，当且仅当 key 存在并且是一个列表。
+// 和 LPUSH 命令相反，当 key 不存在时， LPUSHX 命令什么也不做。
 func (r *Client) LPushX(key string, value interface{}) *redis.IntCmd {
 	return r.client.LPushX(r.k(key), value)
 }
+
+// LRange 返回列表 key 中指定区间内的元素，区间以偏移量 start 和 stop 指定。
+// 下标(index)参数 start 和 stop 都以 0 为底，也就是说，以 0 表示列表的第一个元素，以 1 表示列表的第二个元素，以此类推。
+// 你也可以使用负数下标，以 -1 表示列表的最后一个元素， -2 表示列表的倒数第二个元素，以此类推。
 func (r *Client) LRange(key string, start, stop int64) *redis.StringSliceCmd {
 	return r.client.LRange(r.k(key), start, stop)
 }
+
+// LRem 根据参数 count 的值，移除列表中与参数 value 相等的元素。
 func (r *Client) LRem(key string, count int64, value interface{}) *redis.IntCmd {
 	return r.client.LRem(r.k(key), count, value)
 }
