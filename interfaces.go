@@ -6,25 +6,23 @@ import (
 	"github.com/go-redis/redis/v7"
 )
 
-// Pinger ping 服务器
-type Pinger interface {
-	Ping() *redis.StatusCmd
-}
+// Commander 包含所有方法的接口
+type Commander interface {
+	Pipeline() redis.Pipeliner
+	Pipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
 
-// Incrementer interface 递增
-type Incrementer interface {
+	// Pinger ping 服务器
+	Ping() *redis.StatusCmd
+
+	// Incrementer interface 递增
 	Incr(key string) *redis.IntCmd
 	IncrBy(key string, value int64) *redis.IntCmd
-}
 
-// Decremeter interface 递减
-type Decremeter interface {
+	// Decremeter interface 递减
 	Decr(key string) *redis.IntCmd
 	DecrBy(key string, value int64) *redis.IntCmd
-}
 
-// Expirer interface 过期的方法
-type Expirer interface {
+	// Expirer interface 过期的方法
 	Expire(key string, expiration time.Duration) *redis.BoolCmd
 	ExpireAt(key string, tm time.Time) *redis.BoolCmd
 	Persist(key string) *redis.BoolCmd
@@ -33,10 +31,8 @@ type Expirer interface {
 	PExpireAt(key string, tm time.Time) *redis.BoolCmd
 	PTTL(key string) *redis.DurationCmd
 	TTL(key string) *redis.DurationCmd
-}
 
-// Getter interface 获取key命令
-type Getter interface {
+	// Getter interface 获取key命令
 	Exists(keys ...string) *redis.IntCmd
 	Get(key string) *redis.StringCmd
 	GetBit(key string, offset int64) *redis.IntCmd
@@ -44,10 +40,8 @@ type Getter interface {
 	GetSet(key string, value interface{}) *redis.StringCmd
 	MGet(keys ...string) *redis.SliceCmd
 	Dump(key string) *redis.StringCmd
-}
 
-// Setter interface 设置key命令
-type Setter interface {
+	// Setter interface 设置key命令
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	Append(key, value string) *redis.IntCmd
 	Del(keys ...string) *redis.IntCmd
@@ -55,10 +49,8 @@ type Setter interface {
 
 	MSet(values ...interface{}) *redis.StatusCmd
 	MSetNX(values ...interface{}) *redis.BoolCmd
-}
 
-// Hasher interface  哈希表命令
-type Hasher interface {
+	// Hasher interface  哈希表命令
 	HExists(key, field string) *redis.BoolCmd
 	HGet(key, field string) *redis.StringCmd
 	HGetAll(key string) *redis.StringStringMapCmd
@@ -72,9 +64,7 @@ type Hasher interface {
 	HSetNX(key, field string, value interface{}) *redis.BoolCmd
 	HVals(key string) *redis.StringSliceCmd
 	HDel(key string, fields ...string) *redis.IntCmd
-}
 
-type Lister interface {
 	LIndex(key string, index int64) *redis.StringCmd
 	LInsert(key, op string, pivot, value interface{}) *redis.IntCmd
 	LInsertAfter(key string, pivot, value interface{}) *redis.IntCmd
@@ -91,9 +81,7 @@ type Lister interface {
 	RPopLPush(source, destination string) *redis.StringCmd
 	RPush(key string, values ...interface{}) *redis.IntCmd
 	RPushX(key string, value ...interface{}) *redis.IntCmd
-}
 
-type Settable interface {
 	SAdd(key string, members ...interface{}) *redis.IntCmd
 	SCard(key string) *redis.IntCmd
 	SDiff(keys ...string) *redis.StringSliceCmd
@@ -110,9 +98,7 @@ type Settable interface {
 	SRem(key string, members ...interface{}) *redis.IntCmd
 	SUnion(keys ...string) *redis.StringSliceCmd
 	SUnionStore(destination string, keys ...string) *redis.IntCmd
-}
 
-type SortedSettable interface {
 	ZAdd(key string, members ...*redis.Z) *redis.IntCmd
 	ZAddNX(key string, members ...*redis.Z) *redis.IntCmd
 	ZAddXX(key string, members ...*redis.Z) *redis.IntCmd
@@ -144,48 +130,18 @@ type SortedSettable interface {
 	ZRevRank(key, member string) *redis.IntCmd
 	ZScore(key, member string) *redis.FloatCmd
 	ZUnionStore(dest string, store *redis.ZStore) *redis.IntCmd
-}
 
-type Scanner interface {
 	Type(key string) *redis.StatusCmd
 	Scan(cursor uint64, match string, count int64) *redis.ScanCmd
 	SScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	HScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
 	ZScan(key string, cursor uint64, match string, count int64) *redis.ScanCmd
-}
 
-type BlockedSettable interface {
 	BLPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
 	BRPop(timeout time.Duration, keys ...string) *redis.StringSliceCmd
 	BRPopLPush(source, destination string, timeout time.Duration) *redis.StringCmd
-}
 
-type Publisher interface {
 	Publish(channel string, message interface{}) *redis.IntCmd
-}
 
-type Subscriber interface {
 	Subscribe(channels ...string) *redis.PubSub
-}
-type Pipeline interface {
-	Pipeline() redis.Pipeliner
-}
-
-// Commander 包含所有方法的接口
-type Commander interface {
-	Pinger
-	Incrementer
-	Decremeter
-	Expirer
-	Getter
-	Hasher
-	Lister
-	Setter
-	Settable
-	SortedSettable
-	BlockedSettable
-	Scanner
-	Publisher
-	Subscriber
-	Pipeline
 }

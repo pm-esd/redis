@@ -9,6 +9,7 @@ import (
 	"github.com/go-redis/redis/v7"
 )
 
+//Config 配置
 type Config struct {
 	Type      bool     //是否集群
 	Hosts     []string //IP
@@ -18,13 +19,14 @@ type Config struct {
 	KeyPrefix string
 }
 
+//Configs 配置组
 type Configs struct {
 	cfg         map[string]*Config
 	connections map[string]*Client
 	mu          sync.RWMutex
 }
 
-//Default ..
+//Default 构造
 func Default() *Configs {
 	return &Configs{
 		cfg:         make(map[string]*Config),
@@ -38,14 +40,12 @@ func (configs *Configs) SetConfig(name string, cf *Config) *Configs {
 	return configs
 }
 
-//Get  获取 redis 实列
+//GetRedis  获取 redis 实列
 func (configs *Configs) GetRedis(name string) *Client {
-
 	conn, ok := configs.connections[name]
 	if ok {
 		return conn
 	}
-
 	config, ok := configs.cfg[name]
 	if !ok {
 		Log.Panic("Redis配置:" + name + "找不到！")
@@ -120,12 +120,11 @@ func NewClient(opts Options) *Client {
 		r.client = tc
 
 	}
-
 	r.fmtString = opts.KeyPrefix + "%s"
 	return r
 }
 
-// IsCluster
+// IsCluster 判断是否集群
 func (r *Client) IsCluster() bool {
 	if r.opts.Type == ClientCluster {
 		return true
@@ -157,22 +156,38 @@ func (r *Client) GetClient() Commander {
 	return r.client
 }
 
-// Ping 发送ping命令
+// Ping 使用客户端向 Redis 服务器发送一个 PING ，如果服务器运作正常的话，会返回一个 PONG 。
+// 通常用于测试与服务器的连接是否仍然生效，或者用于测量延迟值。
+// 如果连接正常就返回一个 PONG ，否则返回一个连接错误。
 func (r *Client) Ping() *redis.StatusCmd {
 	return r.client.Ping()
 }
 
-// Incr 对key递增+1
+// Incr 将 key 中储存的数字值增一。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCR 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 执行 INCR 命令之后 key 的值。
 func (r *Client) Incr(key string) *redis.IntCmd {
 	return r.client.Incr(r.k(key))
 }
 
-// IncrBy 使用增量值递增
+// IncrBy 将 key 所储存的值加上增量 increment 。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 INCRBY 命令。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于递增(increment) / 递减(decrement)操作的更多信息，参见 INCR 命令。
+// 加上 increment 之后， key 的值。
 func (r *Client) IncrBy(key string, value int64) *redis.IntCmd {
 	return r.client.IncrBy(r.k(key), value)
 }
 
-// Decr key递减1
+// Decr 将 key 中储存的数字值减一。
+// 如果 key 不存在，那么 key 的值会先被初始化为 0 ，然后再执行 DECR 操作。
+// 如果值包含错误的类型，或字符串类型的值不能表示为数字，那么返回一个错误。
+// 本操作的值限制在 64 位(bit)有符号数字表示之内。
+// 关于递增(increment) / 递减(decrement)操作的更多信息，请参见 INCR 命令。
+// 执行 DECR 命令之后 key 的值。
 func (r *Client) Decr(key string) *redis.IntCmd {
 	return r.client.Decr(r.k(key))
 }
@@ -201,12 +216,25 @@ func (r *Client) Persist(key string) *redis.BoolCmd {
 func (r *Client) PExpire(key string, expiration time.Duration) *redis.BoolCmd {
 	return r.client.PExpire(r.k(key), expiration)
 }
+
+// PExpireAt 这个命令和 expireat 命令类似，但它以毫秒为单位设置 key 的过期 unix 时间戳，而不是像 expireat 那样，以秒为单位。
+// 如果生存时间设置成功，返回 1 。 当 key 不存在或没办法设置生存时间时，返回 0
 func (r *Client) PExpireAt(key string, tm time.Time) *redis.BoolCmd {
 	return r.client.PExpireAt(r.k(key), tm)
 }
+
+// PTTL 这个命令类似于 TTL 命令，但它以毫秒为单位返回 key 的剩余生存时间，而不是像 TTL 命令那样，以秒为单位。
+// 当 key 不存在时，返回 -2 。
+// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
+// 否则，以毫秒为单位，返回 key 的剩余生存时间。
 func (r *Client) PTTL(key string) *redis.DurationCmd {
 	return r.client.PTTL(r.k(key))
 }
+
+// TTL 以秒为单位，返回给定 key 的剩余生存时间(TTL, time to live)。
+// 当 key 不存在时，返回 -2 。
+// 当 key 存在但没有设置剩余生存时间时，返回 -1 。
+// 否则，以秒为单位，返回 key 的剩余生存时间。
 func (r *Client) TTL(key string) *redis.DurationCmd {
 	return r.client.TTL(r.k(key))
 }
@@ -622,9 +650,14 @@ func (r *Client) Subscribe(channels ...string) *redis.PubSub {
 	return r.client.Subscribe(r.ks(channels...)...)
 }
 
-// Pipeline get Pipeliner of r.client
+// Pipeline 获取管道
 func (r *Client) Pipeline() redis.Pipeliner {
 	return r.client.Pipeline()
+}
+
+//Pipelined .
+func (r *Client) Pipelined(fn func(redis.Pipeliner) error) ([]redis.Cmder, error) {
+	return r.Pipelined(fn)
 }
 
 // ErrNotImplemented not implemented error
